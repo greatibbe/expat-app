@@ -184,6 +184,31 @@
     padding:14px 20px; font-family:'Inter',sans-serif; font-weight:700; font-size:14px;
     display:flex; align-items:center; gap:8px; box-shadow:0 6px 18px rgba(14,79,79,0.35); z-index:40;}
   .fab-new-entry:active{background:var(--teal-ink);}
+
+  /* Entry detail modal */
+  .detail-modal-overlay{position:fixed; inset:0; background:rgba(20,30,26,0.55); z-index:60;
+    display:flex; align-items:flex-end; justify-content:center;}
+  .detail-modal-card{background:var(--paper); width:100%; max-width:520px; max-height:88vh; overflow-y:auto;
+    border-radius:20px 20px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling:touch;}
+  @media (min-width:560px){
+    .detail-modal-overlay{align-items:center;}
+    .detail-modal-card{border-radius:18px; max-height:80vh;}
+  }
+  .detail-modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .detail-modal-close{background:var(--paper-dim); border:none; width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); padding:0;}
+  .detail-section-title{font-family:'Fraunces',serif; font-size:14px; font-weight:600; color:var(--teal-deep);
+    margin:16px 0 8px;}
+  .detail-section-title:first-child{margin-top:0;}
+  .detail-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-row .dl{color:var(--ink-soft); flex-shrink:0;}
+  .detail-row .dv{color:var(--ink); font-weight:600; text-align:right; word-break:break-word;}
+  .detail-photos{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:6px;}
+  .detail-photo{aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--white);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:10px; text-align:center;}
+  .detail-photo img{width:100%; height:100%; object-fit:cover;}
 </style>
 </head>
 <body>
@@ -214,7 +239,7 @@
 
   <div class="card" id="login-card">
     <form id="login-form">
-      <div class="field"><label for="li-email">Email</label><input type="email" id="li-email" required autocomplete="email"></div>
+      <div class="field"><label for="li-username">Username</label><input type="text" id="li-username" required autocomplete="username" autocapitalize="none" placeholder="e.g. ia_1634"></div>
       <div class="field"><label for="li-pass">Password</label><input type="password" id="li-pass" required autocomplete="current-password"></div>
       <div class="btn-row"><button type="submit" class="btn-primary">Log in</button></div>
       <div class="error-msg" id="login-error"></div>
@@ -227,7 +252,8 @@
     </p>
     <form id="signup-form">
       <div class="field"><label for="su-name">Your name</label><input type="text" id="su-name" required autocomplete="name"></div>
-      <div class="field"><label for="su-email">Email</label><input type="email" id="su-email" required autocomplete="email"></div>
+      <div class="field"><label for="su-servicenumber">Service number</label><input type="text" id="su-servicenumber" required autocomplete="off" inputmode="numeric" placeholder="e.g. 1634"></div>
+      <div style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 12px;">Your login username will be: <strong id="su-username-preview">ia_...</strong></div>
       <div class="field"><label for="su-pass">Password</label><input type="password" id="su-pass" required minlength="6" autocomplete="new-password"></div>
       <div class="btn-row"><button type="submit" class="btn-primary">Request access</button></div>
       <div class="error-msg" id="signup-error"></div>
@@ -483,6 +509,22 @@
   </div>
   <div class="ledger ledger-list"></div>
   <div class="footer-note">Shared registry — synced securely for all approved users.</div>
+
+  <div class="detail-modal-overlay hidden">
+    <div class="detail-modal-card">
+      <div class="detail-modal-head">
+        <h2 class="card-title" style="margin:0;">Entry details</h2>
+        <button type="button" class="detail-modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="detail-modal-body"></div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button type="button" class="btn-primary detail-modal-edit">Edit this entry</button>
+        <button type="button" class="btn-ghost detail-modal-close">Close</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -546,11 +588,32 @@ try{
     $('#signup-card').classList.remove('hidden'); $('#login-card').classList.add('hidden');
   });
 
+  // Firebase Auth only understands email+password under the hood, so a username like
+  // "ia_1634" is converted to a hidden internal email — the person never sees this.
+  const USERNAME_PREFIX = 'ia_';
+  const USERNAME_EMAIL_DOMAIN = '@dafthar.local';
+  function usernameToAuthEmail(username){
+    return username.trim().toLowerCase().replace(/[^a-z0-9_]/g,'') + USERNAME_EMAIL_DOMAIN;
+  }
+  function serviceNumberToUsername(serviceNumber){
+    return USERNAME_PREFIX + serviceNumber.trim().replace(/[^0-9a-zA-Z]/g,'');
+  }
+
+  const suServiceNumberInput = $('#su-servicenumber');
+  const suUsernamePreview = $('#su-username-preview');
+  if(suServiceNumberInput){
+    suServiceNumberInput.addEventListener('input', () => {
+      const v = suServiceNumberInput.value.trim();
+      suUsernamePreview.textContent = v ? serviceNumberToUsername(v) : 'ia_...';
+    });
+  }
+
   $('#login-form').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const errEl = $('#login-error'); errEl.classList.remove('show');
+    const username = $('#li-username').value.trim();
     try{
-      await auth.signInWithEmailAndPassword($('#li-email').value.trim(), $('#li-pass').value);
+      await auth.signInWithEmailAndPassword(usernameToAuthEmail(username), $('#li-pass').value);
     }catch(error){
       errEl.textContent = friendlyAuthError(error); errEl.classList.add('show');
     }
@@ -560,12 +623,14 @@ try{
     ev.preventDefault();
     const errEl = $('#signup-error'); errEl.classList.remove('show');
     const name = $('#su-name').value.trim();
-    const email = $('#su-email').value.trim();
+    const serviceNumber = $('#su-servicenumber').value.trim();
+    const username = serviceNumberToUsername(serviceNumber);
+    const authEmail = usernameToAuthEmail(username);
     const pass = $('#su-pass').value;
     try{
-      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
       await db.collection('users').doc(cred.user.uid).set({
-        name, email, status:'pending', role:'user',
+        name, username, service_number: serviceNumber, status:'pending', role:'user',
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
       // onAuthStateChanged below picks this up and routes automatically.
@@ -576,12 +641,12 @@ try{
 
   function friendlyAuthError(e){
     const map = {
-      'auth/email-already-in-use':'That email already has an account — try logging in instead.',
-      'auth/invalid-email':'That email address looks invalid.',
+      'auth/email-already-in-use':'That service number is already registered — try logging in instead.',
+      'auth/invalid-email':'That username or service number looks invalid.',
       'auth/weak-password':'Password should be at least 6 characters.',
-      'auth/wrong-password':'Incorrect password.',
-      'auth/user-not-found':'No account found with that email.',
-      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/wrong-password':'Incorrect username or password.',
+      'auth/user-not-found':'No account found with that username.',
+      'auth/invalid-credential':'Incorrect username or password.',
       'auth/too-many-requests':'Too many attempts — please wait a moment and try again.'
     };
     return (e && map[e.code]) || (e && e.message) || 'Something went wrong — please try again.';
@@ -613,11 +678,11 @@ try{
       } else if(profile.status === 'rejected'){
         showView('view-rejected');
       } else if(profile.status === 'approved' && profile.role === 'admin'){
-        $('#admin-email').textContent = profile.email;
+        $('#admin-email').textContent = profile.username;
         showView('view-admin');
         setupAdmin(profile);
       } else if(profile.status === 'approved'){
-        $('#app-user-email').textContent = profile.email;
+        $('#app-user-email').textContent = profile.username;
         showView('view-app');
         setupUserRegistry(profile);
       }
@@ -645,7 +710,7 @@ try{
       if(tab==='registry'){
         navRegistry.classList.add('active'); panelRegistry.classList.remove('hidden');
         if(!panelRegistry.dataset.mounted){
-          mountRegistry(panelRegistry, { admin:true, displayName: profile.name || profile.email });
+          mountRegistry(panelRegistry, { admin:true, displayName: profile.name || profile.username, username: profile.username });
           panelRegistry.dataset.mounted = '1';
         }
       }
@@ -667,7 +732,7 @@ try{
         ? `<div class="empty"><p>No pending requests.</p></div>`
         : pending.map(u => `
           <div class="user-row" data-id="${u.id}">
-            <div><div class="u-name">${escapeHtml(u.name||u.email)}</div><div class="u-email">${escapeHtml(u.email)}</div></div>
+            <div><div class="u-name">${escapeHtml(u.name||u.username)}</div><div class="u-email">${escapeHtml(u.username)}</div></div>
             <div class="u-actions">
               <button class="pill-btn approve" data-action="approve">Approve</button>
               <button class="pill-btn reject" data-action="reject">Reject</button>
@@ -678,7 +743,7 @@ try{
         ? `<div class="empty"><p>No users yet.</p></div>`
         : users.map(u => `
           <div class="user-row" data-id="${u.id}">
-            <div><div class="u-name">${escapeHtml(u.name||u.email)} ${u.role==='admin' ? '&middot; admin' : ''}</div><div class="u-email">${escapeHtml(u.email)}</div></div>
+            <div><div class="u-name">${escapeHtml(u.name||u.username)} ${u.role==='admin' ? '&middot; admin' : ''}</div><div class="u-email">${escapeHtml(u.username)}</div></div>
             <div class="u-actions">
               <span class="status-tag ${u.status}">${u.status}</span>
               ${u.role !== 'admin' ? `<button class="pill-btn reject" data-action="revoke">${u.status==='approved' ? 'Revoke' : 'Remove'}</button>` : ''}
@@ -712,7 +777,7 @@ try{
   }
 
   function setupUserRegistry(profile){
-    mountRegistry($('#registry-main'), { admin:false, displayName: profile.name || profile.email });
+    mountRegistry($('#registry-main'), { admin:false, displayName: profile.name || profile.username, username: profile.username });
   }
 
   function mountRegistry(container, opts){
@@ -950,7 +1015,7 @@ try{
             <div class="hn">${escapeHtml(e.expat_name)}</div>
             <div class="ht"><span class="live-dot"></span>${escapeHtml(relativeTime(e.created_at))}</div>
           </div>
-          <button class="hero-recent-view" data-view-id="${e.id}">${opts.admin ? 'View' : 'Edit'}
+          <button class="hero-recent-view" data-view-id="${e.id}">View
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
           </button>
         </div>`).join('');
@@ -1010,6 +1075,7 @@ try{
             ${e.sup_name ? `<div class="meta" style="margin-top:3px;"><span style="color:var(--gold);">Supervisor: ${escapeHtml(e.sup_name)}</span>${e.sup_contact ? `<span><a href="tel:+${toInternationalDigits(e.sup_contact)}" style="color:var(--teal-deep); text-decoration:none;">${escapeHtml(e.sup_contact)}</a> ${waIconLink(e.sup_contact)}</span>` : ''}</div>` : ''}
           </div>
           <div class="actions">
+            <button class="icon-btn view-btn" title="View details"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
             <button class="icon-btn edit-btn" title="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
             <button class="icon-btn danger del-btn" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
           </div>
@@ -1092,7 +1158,7 @@ try{
           showToast('Entry updated');
         }else{
           data.created_at = firebase.firestore.FieldValue.serverTimestamp();
-          data.created_by = auth.currentUser ? auth.currentUser.email : null;
+          data.created_by = opts.username || (auth.currentUser ? auth.currentUser.email : null);
           await db.collection('entries').doc(entryId).set(data);
           showToast('Entry added');
         }
@@ -1141,6 +1207,75 @@ try{
       fExpatName.scrollIntoView({behavior:'smooth', block:'center'}); fExpatName.focus();
     }
 
+    // ---------- VIEW DETAILS MODAL ----------
+    const detailModalOverlay = container.querySelector('.detail-modal-overlay');
+    const detailModalBody = container.querySelector('.detail-modal-body');
+    const detailModalEditBtn = container.querySelector('.detail-modal-edit');
+    let detailModalEntryId = null;
+
+    function detailRow(label, value){
+      if(!value) return '';
+      return `<div class="detail-row"><span class="dl">${escapeHtml(label)}</span><span class="dv">${value}</span></div>`;
+    }
+    function fmtDate(iso){
+      if(!iso) return '';
+      const d = new Date(iso + 'T00:00:00');
+      if(isNaN(d.getTime())) return escapeHtml(iso);
+      return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+    }
+    function expiryValueHtml(iso){
+      if(!iso) return '';
+      const days = daysUntil(iso);
+      const badge = days !== null && days < 0 ? `<span class="expiry-badge expired" style="margin-left:6px;">Expired</span>`
+        : (days !== null && days <= 30 ? `<span class="expiry-badge expiring" style="margin-left:6px;">Expiring</span>` : '');
+      return `${escapeHtml(fmtDate(iso))}${badge}`;
+    }
+
+    function showEntryDetail(entry, id){
+      detailModalEntryId = id;
+      const photos = [
+        { label:'Passport photo', url: entry.expat_passport_photo_url },
+        { label:'Recent photo', url: entry.expat_recent_photo_url },
+        { label:'Work permit photo', url: entry.expat_work_permit_photo_url }
+      ];
+      detailModalBody.innerHTML = `
+        <div class="detail-photos">
+          ${photos.map(p => `<div class="detail-photo">${p.url ? `<img src="${p.url}" alt="${escapeHtml(p.label)}">` : escapeHtml(p.label)}</div>`).join('')}
+        </div>
+        <div class="detail-section-title">Expatriate's information</div>
+        ${detailRow('Full name', escapeHtml(entry.expat_name))}
+        ${detailRow('Country', escapeHtml(entry.expat_country))}
+        ${detailRow('Passport number', `<span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(entry.expat_passport||'')}</span>`)}
+        ${detailRow('Passport expiry', expiryValueHtml(entry.expat_passport_expiry))}
+        ${detailRow('Work permit number', escapeHtml(entry.expat_work_permit))}
+        ${detailRow('Work permit expiry', expiryValueHtml(entry.expat_work_permit_expiry))}
+        ${detailRow('Current address', escapeHtml(entry.expat_address))}
+        ${detailRow('Phone', entry.expat_phone ? `<a href="tel:+${toInternationalDigits(entry.expat_phone)}" style="color:var(--teal-deep);">${escapeHtml(entry.expat_phone)}</a> ${waIconLink(entry.expat_phone)}` : '')}
+        <div class="detail-section-title">Person in charge</div>
+        ${detailRow('Full name', escapeHtml(entry.sup_name))}
+        ${detailRow('ID number', escapeHtml(entry.sup_id))}
+        ${detailRow('Permanent address', escapeHtml(entry.sup_permanent_address))}
+        ${detailRow('Current address', escapeHtml(entry.sup_current_address))}
+        ${detailRow('Contact number', entry.sup_contact ? `<a href="tel:+${toInternationalDigits(entry.sup_contact)}" style="color:var(--teal-deep);">${escapeHtml(entry.sup_contact)}</a> ${waIconLink(entry.sup_contact)}` : '')}
+      `;
+      detailModalOverlay.classList.remove('hidden');
+    }
+    function closeEntryDetail(){
+      detailModalOverlay.classList.add('hidden');
+      detailModalEntryId = null;
+    }
+    detailModalOverlay.addEventListener('click', (ev) => {
+      if(ev.target === detailModalOverlay) closeEntryDetail();
+    });
+    container.querySelectorAll('.detail-modal-close').forEach(btn => btn.addEventListener('click', closeEntryDetail));
+    detailModalEditBtn.addEventListener('click', () => {
+      const entry = entries.find(e => e.id === detailModalEntryId);
+      closeEntryDetail();
+      if(entry){
+        loadEntryIntoForm(entry, detailModalEntryId);
+      }
+    });
+
     if(heroRecentList){
       heroRecentList.addEventListener('click', (ev) => {
         const btn = ev.target.closest('.hero-recent-view');
@@ -1148,19 +1283,7 @@ try{
         const id = btn.dataset.viewId;
         const entry = entries.find(e => e.id === id);
         if(!entry) return;
-        if(opts.admin && list && list.isConnected){
-          searchInput.value = '';
-          render();
-          const targetRow = list.querySelector(`.row[data-id="${id}"]`);
-          if(targetRow){
-            targetRow.scrollIntoView({behavior:'smooth', block:'center'});
-            targetRow.style.transition = 'background-color .3s ease';
-            targetRow.style.backgroundColor = '#FBF0DE';
-            setTimeout(() => { targetRow.style.backgroundColor = ''; }, 1400);
-          }
-        }else{
-          loadEntryIntoForm(entry, id);
-        }
+        showEntryDetail(entry, id);
       });
     }
 
@@ -1170,7 +1293,7 @@ try{
         if(!row) return;
         const id = row.dataset.id;
         const entry = entries.find(e => e.id === id);
-        if(entry) loadEntryIntoForm(entry, id);
+        if(entry) showEntryDetail(entry, id);
       });
     }
 
@@ -1180,6 +1303,9 @@ try{
       const id = row.dataset.id;
       const entry = entries.find(e => e.id === id);
       if(!entry) return;
+      if(ev.target.closest('.view-btn')){
+        showEntryDetail(entry, id);
+      }
       if(ev.target.closest('.edit-btn')){
         loadEntryIntoForm(entry, id);
       }
@@ -1290,7 +1416,7 @@ try{
 
         importRunBtn.disabled = true;
         let added = 0, skipped = 0;
-        const creatorEmail = auth.currentUser ? auth.currentUser.email : null;
+        const creatorEmail = opts.username || (auth.currentUser ? auth.currentUser.email : null);
         for(let i=0; i<dataLines.length; i++){
           const line = dataLines[i];
           const cols = hasNameHeader ? parseCsvLine(line) : [line.replace(/^["']|["']$/g,'')];
