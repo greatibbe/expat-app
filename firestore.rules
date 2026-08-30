@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isApprovedAdmin() {
+      return isSignedIn() && myProfile().status == 'approved' && myProfile().role == 'admin';
+    }
+    function isApprovedUser() {
+      return isSignedIn() && myProfile().status == 'approved';
+    }
+
+    // Every signed-in user has exactly one profile doc, keyed by their own uid.
+    match /users/{userId} {
+      // Anyone can create their OWN profile at signup, but only as a pending, non-admin user.
+      allow create: if isSignedIn()
+                    && request.auth.uid == userId
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.role == 'user';
+
+      // You can read your own profile (to check approval status). Admins can read everyone's.
+      allow read: if isSignedIn() && (request.auth.uid == userId || isApprovedAdmin());
+
+      // Only an approved admin can approve/reject/edit a profile.
+      allow update, delete: if isApprovedAdmin();
+    }
+
+    // The actual registry data. Only approved users (or admins) can read/write it.
+    match /entries/{entryId} {
+      allow read, write: if isApprovedUser();
+    }
+  }
+}

@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Expatriate Dafthar</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dafthar">
+<meta name="theme-color" content="#0E4F4F">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-deep:#0E4F4F; --teal-ink:#0A3B3B; --paper:#F7F3E8; --paper-dim:#EFE9D8;
+    --ink:#1F2A24; --ink-soft:#5B6A62; --gold:#B08D3E; --gold-soft:#D8C089;
+    --rust:#C1553A; --green-ok:#3E7D4F; --line:#DCD5C0; --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100vh; padding-bottom:calc(40px + env(safe-area-inset-bottom));}
+  .hidden{display:none !important;}
+
+  header{background:linear-gradient(160deg,var(--teal-deep),var(--teal-ink)); color:var(--paper);
+    padding:calc(22px + env(safe-area-inset-top)) 20px 22px; position:relative; overflow:hidden;}
+  header::after{content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 44px); pointer-events:none;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold-soft); display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--gold-soft);}
+  h1{font-family:'Fraunces',serif; font-weight:600; font-size:24px; letter-spacing:-.01em; margin:0; line-height:1.15;}
+  .sub{font-size:13px; color:rgba(247,243,232,0.65); margin-top:6px;}
+  .head-row{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
+  .signout{background:rgba(255,255,255,0.12); color:var(--paper); border:1px solid rgba(255,255,255,0.2);
+    border-radius:8px; padding:8px 12px; font-size:12.5px; font-weight:600; white-space:nowrap;}
+  .count-strip{display:flex; gap:18px; margin-top:16px;}
+  .count-item{font-family:'JetBrains Mono',monospace;}
+  .count-item .n{font-size:20px;font-weight:600;color:var(--paper);display:block;}
+  .count-item .l{font-size:10px;color:rgba(247,243,232,0.55);letter-spacing:.08em;text-transform:uppercase;}
+
+  main{padding:18px 16px 8px; max-width:640px; margin:0 auto;}
+
+  .card{background:var(--white); border:1px solid var(--line); border-radius:14px; padding:20px;
+    margin-bottom:18px; box-shadow:0 1px 2px rgba(15,30,25,0.04);}
+  .card-title{font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin:0 0 14px; color:var(--teal-deep);}
+  .section-sub{font-size:12.5px; color:var(--ink-soft); margin-top:-12px; margin-bottom:4px;}
+  .photo-upload-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px;}
+  .photo-upload-item label{display:block; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px;}
+  .photo-preview{width:100%; aspect-ratio:1; border-radius:10px; border:1.5px dashed var(--line); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); margin-bottom:8px; overflow:hidden;}
+  .photo-preview img{width:100%; height:100%; object-fit:cover;}
+  .call-link{display:inline-flex; align-items:center; gap:4px; color:var(--teal-deep); text-decoration:none; font-size:12px; font-weight:600; margin-top:6px;}
+  .expiry-badge{font-size:10px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:20px; display:inline-block;}
+  .expiry-badge.expired{background:#F6E4DF; color:var(--rust);}
+  .expiry-badge.expiring{background:#FBF0DE; color:var(--gold);}
+  .alert-card{background:#FBF0DE; border:1px solid #E9D4A0; border-radius:14px; padding:14px 16px; margin-bottom:18px;}
+  .alert-card.has-expired{background:#F6E4DF; border-color:#E8B9A8;}
+  .alert-card-head{display:flex; align-items:center; gap:8px; font-weight:600; font-size:13.5px; color:var(--gold); margin-bottom:8px;}
+  .alert-card.has-expired .alert-card-head{color:var(--rust);}
+  .alert-row{display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:12.5px; border-top:1px solid rgba(0,0,0,0.06);}
+  .alert-row:first-of-type{border-top:none;}
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:6px;}
+  .field input{width:100%; padding:12px 13px; border-radius:9px; border:1px solid var(--line); font-size:16px;
+    font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink);}
+  .field input#f-passport{font-family:'JetBrains Mono',monospace; letter-spacing:.03em;}
+  .field input:focus{outline:2px solid var(--teal-deep); outline-offset:1px; background:var(--white);}
+  .btn-row{display:flex; gap:10px; margin-top:16px;}
+  button{font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px; border:none; border-radius:9px;
+    padding:13px 18px; cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .btn-primary{background:var(--teal-deep); color:var(--paper); flex:1;}
+  .btn-primary:active{background:var(--teal-ink);}
+  .btn-primary:disabled{opacity:.55;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
+  .link-btn{background:none; border:none; color:var(--teal-deep); font-weight:600; font-size:13.5px;
+    padding:6px 0; text-decoration:underline; text-underline-offset:2px;}
+  .error-msg{color:var(--rust); font-size:13px; margin-top:10px; display:none;}
+  .error-msg.show{display:block;}
+
+  /* Auth screen */
+  #view-auth{max-width:420px; margin:40px auto 0; padding:0 20px;}
+  .auth-hero{text-align:center; margin-bottom:22px;}
+  .auth-hero .badge{width:52px;height:52px;border-radius:14px;background:var(--teal-deep); margin:0 auto 14px;
+    display:flex;align-items:center;justify-content:center;}
+  .auth-hero h1{font-family:'Fraunces',serif; font-size:22px; color:var(--teal-deep); margin:0 0 4px;}
+  .auth-hero p{font-size:13.5px; color:var(--ink-soft); margin:0;}
+  .tab-row{display:flex; gap:4px; background:var(--paper-dim); border-radius:10px; padding:4px; margin-bottom:20px;}
+  .tab-btn{flex:1; background:none; border:none; padding:9px; border-radius:7px; font-size:13.5px; font-weight:600; color:var(--ink-soft);}
+  .tab-btn.active{background:var(--white); color:var(--teal-deep); box-shadow:0 1px 2px rgba(0,0,0,0.06);}
+
+  /* Status screens */
+  .status-screen{max-width:420px; margin:60px auto 0; padding:0 24px; text-align:center;}
+  .status-screen .icon-wrap{width:56px;height:56px;border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center;}
+  .status-screen h2{font-family:'Fraunces',serif; font-size:20px; margin:0 0 8px; color:var(--ink);}
+  .status-screen p{font-size:14px; color:var(--ink-soft); line-height:1.5; margin:0 0 20px;}
+
+  /* Admin */
+  .admin-nav{display:flex; gap:4px; background:var(--paper-dim); border-radius:10px; padding:4px; margin-bottom:16px;}
+  .admin-nav button{flex:1; background:none; padding:9px; border-radius:7px; font-size:13px; font-weight:600; color:var(--ink-soft); position:relative;}
+  .admin-nav button.active{background:var(--white); color:var(--teal-deep); box-shadow:0 1px 2px rgba(0,0,0,0.06);}
+  .badge-count{background:var(--rust); color:#fff; font-size:10px; font-weight:700; border-radius:20px; padding:1px 6px; margin-left:5px;}
+  .user-row{display:flex; justify-content:space-between; align-items:center; padding:13px 14px; border-bottom:1px solid var(--line); gap:10px;}
+  .user-row:last-child{border-bottom:none;}
+  .user-row .u-name{font-size:14.5px; font-weight:600;}
+  .user-row .u-email{font-size:12px; color:var(--ink-soft);}
+  .user-row .u-actions{display:flex; gap:6px;}
+  .pill-btn{padding:8px 12px; border-radius:7px; font-size:12.5px;}
+  .pill-btn.approve{background:var(--green-ok); color:#fff;}
+  .pill-btn.reject{background:var(--paper-dim); color:var(--rust);}
+  .status-tag{font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:20px;}
+  .status-tag.approved{background:#E4F1E7; color:var(--green-ok);}
+  .status-tag.pending{background:#FBF0DE; color:var(--gold);}
+  .status-tag.rejected{background:#F6E4DF; color:var(--rust);}
+
+  /* Search + ledger (registry) */
+  .search-wrap{margin-bottom:16px;}
+  .search-wrap input{width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--line);
+    background:var(--white); font-size:15px; font-family:'Inter',sans-serif; color:var(--ink);}
+  .search-wrap input:focus{outline:2px solid var(--teal-deep); outline-offset:1px;}
+  .ledger-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .ledger-head h2{font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--teal-deep); margin:0;}
+  .ledger{background:var(--white); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .row{display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center; padding:13px 14px;
+    border-bottom:1px solid var(--line); animation:rise .25s ease both;}
+  .row:last-child{border-bottom:none;}
+  @keyframes rise{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+  .row .num{font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--gold); text-align:right;}
+  .row .info{min-width:0;}
+  .row .name{font-size:15px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .row .meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap;}
+  .row .meta .pass{font-family:'JetBrains Mono',monospace; color:var(--teal-deep);}
+  .row .actions{display:flex; gap:6px;}
+  .icon-btn{background:var(--paper-dim); border:none; width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); padding:0;}
+  .icon-btn.danger{color:var(--rust);}
+  .icon-btn:active{background:var(--line);}
+  .empty{text-align:center; padding:40px 20px; color:var(--ink-soft);}
+  .empty p{font-size:14px; margin:0;}
+  .footer-note{text-align:center; font-size:11.5px; color:var(--ink-soft); padding:22px 20px 0;}
+
+  .toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translate(-50%, 20px);
+    background:var(--teal-ink); color:var(--paper); font-size:13.5px; font-weight:500; padding:12px 18px; border-radius:10px;
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:50; box-shadow:0 6px 20px rgba(0,0,0,0.2);}
+  .toast.show{opacity:1; transform:translate(-50%,0);}
+  @media (prefers-reduced-motion: reduce){.row{animation:none;} .toast{transition:none;}}
+
+  #boot-loading{display:flex; align-items:center; justify-content:center; min-height:100vh; color:var(--ink-soft); font-size:14px;}
+  #boot-error{display:none; max-width:480px; margin:60px auto; padding:0 20px;}
+  #boot-error .card{border-color:#E8B9A8;}
+  #boot-error h2{font-family:'Fraunces',serif; color:var(--rust); font-size:18px; margin:0 0 10px;}
+  #boot-error p{font-size:13.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 12px;}
+  #boot-error pre{background:var(--paper-dim); padding:12px; border-radius:8px; font-size:11.5px;
+    white-space:pre-wrap; word-break:break-word; color:var(--rust); margin:0;}
+
+  /* Hero dashboard */
+  .hero-dash{margin-bottom:20px;}
+  .hero-greet{font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--ink); margin-bottom:14px;}
+  .hero-greet .hero-name{color:var(--teal-deep);}
+  .hero-stats{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px;}
+  .hero-stat-card{background:var(--white); border:1px solid var(--line); border-radius:12px; padding:14px 8px; text-align:center;}
+  .hero-stat-n{font-family:'Fraunces',serif; font-weight:600; font-size:22px; color:var(--teal-deep);}
+  .hero-stat-l{font-size:10.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); margin-top:3px;}
+  .hero-recent-head{font-family:'Fraunces',serif; font-size:15px; font-weight:600; color:var(--teal-deep); margin-bottom:8px;}
+  .hero-recent-list{background:var(--white); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .hero-recent-row{display:flex; align-items:center; gap:11px; padding:12px 14px; border-bottom:1px solid var(--line);}
+  .hero-recent-row:last-child{border-bottom:none;}
+  .hero-avatar{width:36px; height:36px; border-radius:50%; background:var(--paper-dim); color:var(--teal-deep);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:600; font-size:13px; flex-shrink:0; overflow:hidden;}
+  .hero-recent-info{flex:1; min-width:0;}
+  .hero-recent-info .hn{font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .hero-recent-info .ht{font-size:11.5px; color:var(--ink-soft); margin-top:1px; display:flex; align-items:center; gap:5px;}
+  .hero-recent-info .ht .live-dot{width:5px; height:5px; border-radius:50%; background:var(--green-ok); display:inline-block;}
+  .hero-recent-view{background:none; border:none; color:var(--gold); font-size:12.5px; font-weight:600; padding:6px; display:flex; align-items:center; gap:2px; flex-shrink:0;}
+  .hero-recent-empty{padding:26px 20px; text-align:center; font-size:13px; color:var(--ink-soft);}
+
+  /* Floating action button */
+  .fab-new-entry{position:fixed; right:18px; bottom:calc(22px + env(safe-area-inset-bottom));
+    background:var(--teal-deep); color:var(--paper); border:none; border-radius:30px;
+    padding:14px 20px; font-family:'Inter',sans-serif; font-weight:700; font-size:14px;
+    display:flex; align-items:center; gap:8px; box-shadow:0 6px 18px rgba(14,79,79,0.35); z-index:40;}
+  .fab-new-entry:active{background:var(--teal-ink);}
+</style>
+</head>
+<body>
+
+<div id="boot-loading">Loading…</div>
+<div id="boot-error">
+  <div class="card">
+    <h2>Something went wrong loading the app</h2>
+    <p>Please screenshot this and send it back so it can be fixed. Common causes: <code>firebase-config.js</code> still has placeholder values, or the domain isn't in Firebase's Authorized domains list.</p>
+    <pre id="boot-error-detail"></pre>
+  </div>
+</div>
+
+<!-- ===================== AUTH (login / signup) ===================== -->
+<div id="view-auth" class="hidden">
+  <div class="auth-hero">
+    <div class="badge">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F7F3E8" stroke-width="2"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12h6M9 16h6M9 8h3"/></svg>
+    </div>
+    <h1>Bidheyseenge Dafthar</h1>
+    <p>Sign in to access the shared expatriate registry.</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" id="tab-login">Log in</button>
+    <button class="tab-btn" id="tab-signup">Request access</button>
+  </div>
+
+  <div class="card" id="login-card">
+    <form id="login-form">
+      <div class="field"><label for="li-email">Email</label><input type="email" id="li-email" required autocomplete="email"></div>
+      <div class="field"><label for="li-pass">Password</label><input type="password" id="li-pass" required autocomplete="current-password"></div>
+      <div class="btn-row"><button type="submit" class="btn-primary">Log in</button></div>
+      <div class="error-msg" id="login-error"></div>
+    </form>
+  </div>
+
+  <div class="card hidden" id="signup-card">
+    <p style="font-size:13px; color:var(--ink-soft); margin:-4px 0 14px;">
+      Your request will be sent to the administrator. You'll get access once approved.
+    </p>
+    <form id="signup-form">
+      <div class="field"><label for="su-name">Your name</label><input type="text" id="su-name" required autocomplete="name"></div>
+      <div class="field"><label for="su-email">Email</label><input type="email" id="su-email" required autocomplete="email"></div>
+      <div class="field"><label for="su-pass">Password</label><input type="password" id="su-pass" required minlength="6" autocomplete="new-password"></div>
+      <div class="btn-row"><button type="submit" class="btn-primary">Request access</button></div>
+      <div class="error-msg" id="signup-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== PENDING / REJECTED ===================== -->
+<div id="view-pending" class="status-screen hidden">
+  <div class="icon-wrap" style="background:#FBF0DE;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B08D3E" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+  </div>
+  <h2>Waiting for approval</h2>
+  <p>Your access request has been sent to the administrator. This page will update automatically once you're approved — no need to keep checking.</p>
+  <button class="btn-ghost" id="pending-signout">Sign out</button>
+</div>
+
+<div id="view-rejected" class="status-screen hidden">
+  <div class="icon-wrap" style="background:#F6E4DF;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C1553A" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+  </div>
+  <h2>Access not approved</h2>
+  <p>The administrator has not approved this account for access. Contact them if you believe this is a mistake.</p>
+  <button class="btn-ghost" id="rejected-signout">Sign out</button>
+</div>
+
+<!-- ===================== ADMIN ===================== -->
+<div id="view-admin" class="hidden">
+  <header>
+    <div class="head-row">
+      <div>
+        <div class="eyebrow"><span class="dot"></span>Administrator</div>
+        <h1>User approvals</h1>
+        <div class="sub" id="admin-email"></div>
+      </div>
+      <button class="signout" id="admin-signout">Sign out</button>
+    </div>
+  </header>
+  <main>
+    <div class="admin-nav">
+      <button class="active" id="nav-approvals">Approvals <span class="badge-count hidden" id="pending-badge">0</span></button>
+      <button id="nav-allusers">All users</button>
+      <button id="nav-registry">Registry</button>
+    </div>
+
+    <div id="admin-approvals-panel">
+      <div class="ledger" id="pending-list"></div>
+    </div>
+
+    <div id="admin-users-panel" class="hidden">
+      <div class="ledger" id="all-users-list"></div>
+    </div>
+
+    <div id="admin-registry-panel" class="hidden"></div>
+  </main>
+</div>
+
+<!-- ===================== MAIN REGISTRY APP (approved users) ===================== -->
+<div id="view-app" class="hidden">
+  <header>
+    <div class="head-row">
+      <div>
+        <div class="eyebrow"><span class="dot"></span>Expatriate Registry &middot; 2026</div>
+        <h1>Bidheyseenge Dafthar</h1>
+        <div class="sub" id="app-user-email"></div>
+      </div>
+      <button class="signout" id="app-signout">Sign out</button>
+    </div>
+    <div class="count-strip">
+      <div class="count-item"><span class="n" id="stat-total">0</span><span class="l">Entries</span></div>
+      <div class="count-item"><span class="n" id="stat-countries">0</span><span class="l">Countries</span></div>
+    </div>
+  </header>
+  <main id="registry-main"></main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Registry panel template (reused for both normal users and the admin's Registry tab) -->
+<template id="registry-template">
+  <div class="hero-dash">
+    <div class="hero-greet">Welcome, <span class="hero-name"></span></div>
+    <div class="hero-stats">
+      <div class="hero-stat-card">
+        <div class="hero-stat-n hero-stat-total">0</div>
+        <div class="hero-stat-l">Entries</div>
+      </div>
+      <div class="hero-stat-card">
+        <div class="hero-stat-n hero-stat-countries">0</div>
+        <div class="hero-stat-l">Countries</div>
+      </div>
+      <div class="hero-stat-card hero-stat-expiring-card">
+        <div class="hero-stat-n hero-stat-expiring" style="color:var(--rust);">0</div>
+        <div class="hero-stat-l">Expiring / expired</div>
+      </div>
+      <div class="hero-stat-card hero-stat-sync">
+        <div class="hero-stat-n" style="color:var(--green-ok); display:flex; align-items:center; justify-content:center; gap:5px; font-size:14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Live
+        </div>
+        <div class="hero-stat-l">Synced</div>
+      </div>
+    </div>
+    <div class="alert-card hidden hero-alert-card">
+      <div class="alert-card-head">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0Z"/></svg>
+        <span class="hero-alert-title">Documents expiring soon</span>
+      </div>
+      <div class="hero-alert-list"></div>
+    </div>
+    <div class="hero-recent">
+      <div class="hero-recent-head">Recent entries</div>
+      <div class="hero-recent-list"></div>
+    </div>
+  </div>
+
+  <div class="search-wrap"><input type="text" class="search-input" placeholder="Search by name, country, passport, work permit, address, phone or supervisor..." autocomplete="off"></div>
+  <button type="button" class="expiring-filter-chip" style="font-size:12px; font-weight:600; color:var(--gold); background:#FBF0DE; border:none; border-radius:20px; padding:7px 14px; margin:-8px 0 16px;">Show expiring/expired only</button>
+  <form class="entry-form">
+    <div class="card">
+      <h2 class="card-title">Expatriate's Information</h2>
+      <div class="section-sub">ބިދޭސީންގެ މަޢުލޫމާތު</div>
+      <div class="editing-badge hidden" style="font-size:11.5px; font-weight:600; color:var(--gold); background:#FBF0DE; display:inline-block; padding:4px 10px; border-radius:20px; margin-top:8px;">Editing existing entry</div>
+      <div class="scan-row" style="margin:14px 0;">
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn-ghost scan-camera-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13.5px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+            Take photo
+          </button>
+          <button type="button" class="btn-ghost scan-upload-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13.5px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            Upload from file
+          </button>
+        </div>
+        <div style="font-size:11.5px; color:var(--ink-soft); margin-top:6px;">Scan the passport photo page to auto-fill the fields below.</div>
+        <input type="file" class="scan-camera-input" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" class="scan-upload-input" accept="image/*" style="display:none;">
+        <div class="scan-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px; display:none;"></div>
+      </div>
+
+      <div class="field"><label>Full name</label><input type="text" class="f-expat-name" placeholder="e.g. Nikhil Kuttamperoor Kuriakose" required autocomplete="off"></div>
+      <div class="field"><label>Country</label><input type="text" class="f-expat-country" placeholder="e.g. India" required autocomplete="off"></div>
+      <div class="field"><label>Passport number</label><input type="text" class="f-expat-passport" placeholder="e.g. N1234567" required autocomplete="off" autocapitalize="characters"></div>
+      <div class="field"><label>Passport expiry date</label><input type="date" class="f-expat-passport-expiry" autocomplete="off"></div>
+      <div class="field"><label>Work permit number</label><input type="text" class="f-expat-workpermit" placeholder="e.g. WP123456" autocomplete="off"></div>
+      <div class="field"><label>Work permit expiry date</label><input type="date" class="f-expat-workpermit-expiry" autocomplete="off"></div>
+      <div class="field"><label>Current address</label><input type="text" class="f-expat-address" placeholder="e.g. H. Sunshine, Male'" autocomplete="off"></div>
+      <div class="field">
+        <label>Phone number</label>
+        <input type="tel" class="f-expat-phone" placeholder="e.g. 7712345" autocomplete="off">
+        <a class="call-link expat-call-link hidden" href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call expat</a>
+        <a class="call-link expat-whatsapp-link hidden" href="#" target="_blank" rel="noopener" style="margin-left:14px; color:#3E7D4F;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2zm5.83 14.1c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.02.24-3.44-.72-2.9-1.15-4.76-4.1-4.9-4.3-.14-.19-1.17-1.55-1.17-2.96s.72-2.1 1-2.39c.24-.25.53-.31.7-.31.18 0 .35 0 .5.01.16.01.38-.06.6.45.24.57.8 1.98.87 2.12.07.15.11.32.02.51-.09.19-.14.31-.28.47-.14.16-.29.36-.42.48-.14.13-.28.28-.12.55.16.27.71 1.18 1.53 1.9 1.05.94 1.94 1.24 2.21 1.38.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.35-.22.6-.13.24.09 1.55.73 1.82.86.27.13.44.2.51.31.07.11.07.66-.17 1.34z"/></svg>WhatsApp</a>
+      </div>
+
+      <div class="scan-row" style="margin:14px 0;">
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn-ghost wp-scan-camera-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13.5px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+            Take photo
+          </button>
+          <button type="button" class="btn-ghost wp-scan-upload-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13.5px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            Upload from file
+          </button>
+        </div>
+        <div style="font-size:11.5px; color:var(--ink-soft); margin-top:6px;">Scan the work permit card to try auto-filling its number and expiry date.</div>
+        <input type="file" class="wp-scan-camera-input" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" class="wp-scan-upload-input" accept="image/*" style="display:none;">
+        <div class="wp-scan-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px; display:none;"></div>
+      </div>
+
+      <div class="photo-upload-row">
+        <div class="photo-upload-item">
+          <label>Passport photo</label>
+          <div class="photo-preview" data-role="expat-passport-photo-preview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <button type="button" class="btn-ghost photo-pick-btn" data-target="expat-passport-photo" style="width:100%; font-size:11.5px; padding:8px 4px;">Choose photo</button>
+          <input type="file" class="photo-file-input" data-role="expat-passport-photo" accept="image/*" style="display:none;">
+        </div>
+        <div class="photo-upload-item">
+          <label>Recent photo</label>
+          <div class="photo-preview" data-role="expat-recent-photo-preview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <button type="button" class="btn-ghost photo-pick-btn" data-target="expat-recent-photo" style="width:100%; font-size:11.5px; padding:8px 4px;">Choose photo</button>
+          <input type="file" class="photo-file-input" data-role="expat-recent-photo" accept="image/*" style="display:none;">
+        </div>
+        <div class="photo-upload-item">
+          <label>Work permit photo</label>
+          <div class="photo-preview" data-role="expat-workpermit-photo-preview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 15h4"/></svg>
+          </div>
+          <button type="button" class="btn-ghost photo-pick-btn" data-target="expat-workpermit-photo" style="width:100%; font-size:11.5px; padding:8px 4px;">Choose photo</button>
+          <input type="file" class="photo-file-input" data-role="expat-workpermit-photo" accept="image/*" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Information of the person in charge of the expatriate</h2>
+      <div class="section-sub">ބިދޭސީންނާ ޙަވާލުވެގެންވާ ފަރާތުގެ މަޢުލޫމާތު</div>
+      <div style="height:12px;"></div>
+      <div class="field"><label>Full name</label><input type="text" class="f-sup-name" placeholder="e.g. Ahmed Shifau" autocomplete="off"></div>
+      <div class="field"><label>ID number</label><input type="text" class="f-sup-id" placeholder="e.g. A123456" autocomplete="off"></div>
+      <div class="field"><label>Permanent address</label><input type="text" class="f-sup-permanent-address" placeholder="e.g. Hirilandhoo, Thaa Atoll" autocomplete="off"></div>
+      <div class="field"><label>Current address</label><input type="text" class="f-sup-current-address" placeholder="e.g. H. Sunshine, Male'" autocomplete="off"></div>
+      <div class="field">
+        <label>Contact number</label>
+        <input type="tel" class="f-sup-contact" placeholder="e.g. 7712345" autocomplete="off">
+        <a class="call-link sup-call-link hidden" href="#"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call supervisor</a>
+        <a class="call-link sup-whatsapp-link hidden" href="#" target="_blank" rel="noopener" style="margin-left:14px; color:#3E7D4F;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2zm5.83 14.1c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.02.24-3.44-.72-2.9-1.15-4.76-4.1-4.9-4.3-.14-.19-1.17-1.55-1.17-2.96s.72-2.1 1-2.39c.24-.25.53-.31.7-.31.18 0 .35 0 .5.01.16.01.38-.06.6.45.24.57.8 1.98.87 2.12.07.15.11.32.02.51-.09.19-.14.31-.28.47-.14.16-.29.36-.42.48-.14.13-.28.28-.12.55.16.27.71 1.18 1.53 1.9 1.05.94 1.94 1.24 2.21 1.38.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.35-.22.6-.13.24.09 1.55.73 1.82.86.27.13.44.2.51.31.07.11.07.66-.17 1.34z"/></svg>WhatsApp</a>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-primary submit-btn">Add entry</button>
+        <button type="button" class="btn-ghost cancel-edit hidden">Cancel</button>
+      </div>
+      <div class="save-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px;"></div>
+    </div>
+  </form>
+  <div class="ledger-head">
+    <h2>Dafthar</h2>
+    <div style="display:flex; gap:14px; align-items:center;">
+      <button class="import-toggle" style="font-size:12px; font-weight:600; color:var(--teal-deep); background:none; border:none; padding:4px 0; text-decoration:underline; text-underline-offset:2px;">Bulk import</button>
+      <button class="delete-all-btn" style="font-size:12px; font-weight:600; color:var(--rust); background:none; border:none; padding:4px 0; text-decoration:underline; text-underline-offset:2px;">Delete all</button>
+      <button class="export">Export CSV</button>
+    </div>
+  </div>
+  <div class="card delete-all-panel hidden" style="margin-bottom:14px; border-color:#E8B9A8;">
+    <h2 class="card-title" style="color:var(--rust);">Delete all entries</h2>
+    <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 12px; line-height:1.5;">
+      This permanently deletes every entry in the dafthar for everyone. It cannot be undone. Export a CSV backup first if you might need this data later.
+      To confirm, type <strong>DELETE ALL</strong> below.
+    </p>
+    <input type="text" class="delete-all-confirm" placeholder="Type DELETE ALL to confirm" style="width:100%; padding:12px 13px; border-radius:9px; border:1px solid var(--line); font-size:15px; font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink); margin-bottom:12px;">
+    <div class="btn-row">
+      <button type="button" class="btn-primary delete-all-run" style="background:var(--rust);">Delete all entries</button>
+      <button type="button" class="btn-ghost delete-all-cancel">Cancel</button>
+    </div>
+    <div class="delete-all-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px;"></div>
+  </div>
+  <div class="card import-panel hidden" style="margin-bottom:14px;">
+    <h2 class="card-title">Bulk import</h2>
+    <p style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 12px;">
+      Just paste a list of names, one per line — that's all you need. (If you'd rather include Country, Passport, etc. too, paste CSV text with a header row instead: FullName,Country,PassportNumber,...)
+    </p>
+    <textarea class="import-textarea" rows="8" style="width:100%; padding:12px; border-radius:9px; border:1px solid var(--line); font-family:'JetBrains Mono',monospace; font-size:12.5px; background:var(--paper); color:var(--ink);" placeholder="Jane Doe&#10;John Smith&#10;Maria Garcia"></textarea>
+    <div class="btn-row">
+      <button type="button" class="btn-primary import-run">Import entries</button>
+      <button type="button" class="btn-ghost import-cancel">Cancel</button>
+    </div>
+    <div class="import-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px;"></div>
+  </div>
+  <div class="ledger ledger-list"></div>
+  <div class="footer-note">Shared registry — synced securely for all approved users.</div>
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+function bootFail(detail){
+  document.getElementById('boot-loading').style.display = 'none';
+  document.getElementById('boot-error').style.display = 'block';
+  document.getElementById('boot-error-detail').textContent = detail;
+  console.error('[Dafthar boot error]', detail);
+}
+window.addEventListener('error', (ev) => {
+  bootFail((ev.error && ev.error.message) || ev.message || 'Unknown script error');
+});
+(function(){
+try{
+  if(typeof firebase === 'undefined'){
+    bootFail('The Firebase SDK did not load. Check your internet connection, or that the <script> tags for firebase-app-compat.js etc. in index.html were uploaded correctly.');
+    return;
+  }
+  if(typeof firebaseConfig === 'undefined'){
+    bootFail('firebase-config.js did not load or is missing. Make sure that file was uploaded alongside index.html.');
+    return;
+  }
+  const stillPlaceholder = Object.values(firebaseConfig).some(v => String(v).includes('PASTE_'));
+  if(stillPlaceholder){
+    bootFail('firebase-config.js still has placeholder values (PASTE_API_KEY_HERE etc). Open firebase-config.js and replace them with your real Firebase project config (Firebase Console -> Project settings -> Your apps).');
+    return;
+  }
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  document.getElementById('boot-loading').style.display = 'none';
+
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const views = ['view-auth','view-pending','view-rejected','view-admin','view-app'];
+  function showView(id){
+    views.forEach(v => document.getElementById(v).classList.toggle('hidden', v !== id));
+  }
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ---------- AUTH TABS ----------
+  $('#tab-login').addEventListener('click', () => {
+    $('#tab-login').classList.add('active'); $('#tab-signup').classList.remove('active');
+    $('#login-card').classList.remove('hidden'); $('#signup-card').classList.add('hidden');
+  });
+  $('#tab-signup').addEventListener('click', () => {
+    $('#tab-signup').classList.add('active'); $('#tab-login').classList.remove('active');
+    $('#signup-card').classList.remove('hidden'); $('#login-card').classList.add('hidden');
+  });
+
+  $('#login-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const errEl = $('#login-error'); errEl.classList.remove('show');
+    try{
+      await auth.signInWithEmailAndPassword($('#li-email').value.trim(), $('#li-pass').value);
+    }catch(error){
+      errEl.textContent = friendlyAuthError(error); errEl.classList.add('show');
+    }
+  });
+
+  $('#signup-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const errEl = $('#signup-error'); errEl.classList.remove('show');
+    const name = $('#su-name').value.trim();
+    const email = $('#su-email').value.trim();
+    const pass = $('#su-pass').value;
+    try{
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await db.collection('users').doc(cred.user.uid).set({
+        name, email, status:'pending', role:'user',
+        created_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      // onAuthStateChanged below picks this up and routes automatically.
+    }catch(error){
+      errEl.textContent = friendlyAuthError(error); errEl.classList.add('show');
+    }
+  });
+
+  function friendlyAuthError(e){
+    const map = {
+      'auth/email-already-in-use':'That email already has an account — try logging in instead.',
+      'auth/invalid-email':'That email address looks invalid.',
+      'auth/weak-password':'Password should be at least 6 characters.',
+      'auth/wrong-password':'Incorrect password.',
+      'auth/user-not-found':'No account found with that email.',
+      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/too-many-requests':'Too many attempts — please wait a moment and try again.'
+    };
+    return (e && map[e.code]) || (e && e.message) || 'Something went wrong — please try again.';
+  }
+
+  $('#pending-signout').addEventListener('click', () => auth.signOut());
+  $('#rejected-signout').addEventListener('click', () => auth.signOut());
+  $('#admin-signout').addEventListener('click', () => auth.signOut());
+  $('#app-signout').addEventListener('click', () => auth.signOut());
+
+  // ---------- AUTH STATE ROUTING ----------
+  let profileUnsub = null;
+
+  auth.onAuthStateChanged((user) => {
+    if(profileUnsub){ profileUnsub(); profileUnsub = null; }
+    teardownRegistries();
+
+    if(!user){
+      showView('view-auth');
+      $('#login-form').reset(); $('#signup-form').reset();
+      return;
+    }
+
+    profileUnsub = db.collection('users').doc(user.uid).onSnapshot((doc) => {
+      if(!doc.exists) return; // race right after signup write
+      const profile = doc.data();
+      if(profile.status === 'pending'){
+        showView('view-pending');
+      } else if(profile.status === 'rejected'){
+        showView('view-rejected');
+      } else if(profile.status === 'approved' && profile.role === 'admin'){
+        $('#admin-email').textContent = profile.email;
+        showView('view-admin');
+        setupAdmin(profile);
+      } else if(profile.status === 'approved'){
+        $('#app-user-email').textContent = profile.email;
+        showView('view-app');
+        setupUserRegistry(profile);
+      }
+    }, (err) => {
+      bootFail('Could not read your user profile from Firestore: ' + err.message + '\n\nThis usually means the security rules from firestore.rules were not pasted/published correctly in Firebase Console -> Firestore Database -> Rules.');
+    });
+  });
+
+  // ---------- ADMIN PANEL ----------
+  let adminUsersUnsub = null;
+  function teardownAdmin(){
+    if(adminUsersUnsub){ adminUsersUnsub(); adminUsersUnsub = null; }
+  }
+
+  function setupAdmin(profile){
+    teardownAdmin();
+    const navApprovals = $('#nav-approvals'), navAll = $('#nav-allusers'), navRegistry = $('#nav-registry');
+    const panelApprovals = $('#admin-approvals-panel'), panelAll = $('#admin-users-panel'), panelRegistry = $('#admin-registry-panel');
+
+    function setTab(tab){
+      [navApprovals, navAll, navRegistry].forEach(b => b.classList.remove('active'));
+      [panelApprovals, panelAll, panelRegistry].forEach(p => p.classList.add('hidden'));
+      if(tab==='approvals'){ navApprovals.classList.add('active'); panelApprovals.classList.remove('hidden'); }
+      if(tab==='all'){ navAll.classList.add('active'); panelAll.classList.remove('hidden'); }
+      if(tab==='registry'){
+        navRegistry.classList.add('active'); panelRegistry.classList.remove('hidden');
+        if(!panelRegistry.dataset.mounted){
+          mountRegistry(panelRegistry, { admin:true, displayName: profile.name || profile.email });
+          panelRegistry.dataset.mounted = '1';
+        }
+      }
+    }
+    navApprovals.onclick = () => setTab('approvals');
+    navAll.onclick = () => setTab('all');
+    navRegistry.onclick = () => setTab('registry');
+    setTab('approvals');
+
+    const unsubAll = db.collection('users').orderBy('created_at','desc').onSnapshot((snap) => {
+      const users = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      const pending = users.filter(u => u.status === 'pending');
+
+      const badge = $('#pending-badge');
+      if(pending.length > 0){ badge.textContent = pending.length; badge.classList.remove('hidden'); }
+      else{ badge.classList.add('hidden'); }
+
+      $('#pending-list').innerHTML = pending.length === 0
+        ? `<div class="empty"><p>No pending requests.</p></div>`
+        : pending.map(u => `
+          <div class="user-row" data-id="${u.id}">
+            <div><div class="u-name">${escapeHtml(u.name||u.email)}</div><div class="u-email">${escapeHtml(u.email)}</div></div>
+            <div class="u-actions">
+              <button class="pill-btn approve" data-action="approve">Approve</button>
+              <button class="pill-btn reject" data-action="reject">Reject</button>
+            </div>
+          </div>`).join('');
+
+      $('#all-users-list').innerHTML = users.length === 0
+        ? `<div class="empty"><p>No users yet.</p></div>`
+        : users.map(u => `
+          <div class="user-row" data-id="${u.id}">
+            <div><div class="u-name">${escapeHtml(u.name||u.email)} ${u.role==='admin' ? '&middot; admin' : ''}</div><div class="u-email">${escapeHtml(u.email)}</div></div>
+            <div class="u-actions">
+              <span class="status-tag ${u.status}">${u.status}</span>
+              ${u.role !== 'admin' ? `<button class="pill-btn reject" data-action="revoke">${u.status==='approved' ? 'Revoke' : 'Remove'}</button>` : ''}
+            </div>
+          </div>`).join('');
+    });
+    adminUsersUnsub = unsubAll;
+
+    document.body.addEventListener('click', adminActionHandler);
+    async function adminActionHandler(ev){
+      const row = ev.target.closest('.user-row');
+      if(!row || !document.getElementById('view-admin').contains(row)) return;
+      const id = row.dataset.id;
+      const action = ev.target.dataset.action;
+      if(action === 'approve') db.collection('users').doc(id).update({ status:'approved' }).then(()=>showToast('User approved'));
+      if(action === 'reject') db.collection('users').doc(id).update({ status:'rejected' }).then(()=>showToast('User rejected'));
+      if(action === 'revoke'){
+        if(confirm('Remove this user\'s access? They will need to be re-approved to get back in.')){
+          db.collection('users').doc(id).update({ status:'rejected' }).then(()=>showToast('Access revoked'));
+        }
+      }
+    }
+  }
+
+  // ---------- SHARED REGISTRY (entries table) ----------
+  let entriesUnsub = null;
+  function teardownRegistries(){
+    if(entriesUnsub){ entriesUnsub(); entriesUnsub = null; }
+    const rp = $('#admin-registry-panel');
+    if(rp) rp.dataset.mounted = '';
+  }
+
+  function setupUserRegistry(profile){
+    mountRegistry($('#registry-main'), { admin:false, displayName: profile.name || profile.email });
+  }
+
+  function mountRegistry(container, opts){
+    const tpl = document.getElementById('registry-template');
+    const node = tpl.content.cloneNode(true);
+    container.innerHTML = '';
+    container.appendChild(node);
+
+    const searchInput = container.querySelector('.search-input');
+    const heroName = container.querySelector('.hero-name');
+    const heroStatTotal = container.querySelector('.hero-stat-total');
+    const heroStatCountries = container.querySelector('.hero-stat-countries');
+    const heroStatExpiring = container.querySelector('.hero-stat-expiring');
+    const heroAlertCard = container.querySelector('.hero-alert-card');
+    const heroAlertList = container.querySelector('.hero-alert-list');
+    const heroAlertTitle = container.querySelector('.hero-alert-title');
+    const heroRecentList = container.querySelector('.hero-recent-list');
+    if(heroName) heroName.textContent = (opts.displayName || 'there').split(' ')[0];
+
+    const form = container.querySelector('.entry-form');
+    const fExpatName = container.querySelector('.f-expat-name');
+    const fExpatCountry = container.querySelector('.f-expat-country');
+    const fExpatPassport = container.querySelector('.f-expat-passport');
+    const fExpatPassportExpiry = container.querySelector('.f-expat-passport-expiry');
+    const fExpatWorkPermit = container.querySelector('.f-expat-workpermit');
+    const fExpatWorkPermitExpiry = container.querySelector('.f-expat-workpermit-expiry');
+    const fExpatAddress = container.querySelector('.f-expat-address');
+    const fExpatPhone = container.querySelector('.f-expat-phone');
+    const expatCallLink = container.querySelector('.expat-call-link');
+    const expatWhatsappLink = container.querySelector('.expat-whatsapp-link');
+    const fSupName = container.querySelector('.f-sup-name');
+    const fSupId = container.querySelector('.f-sup-id');
+    const fSupPermanentAddress = container.querySelector('.f-sup-permanent-address');
+    const fSupCurrentAddress = container.querySelector('.f-sup-current-address');
+    const fSupContact = container.querySelector('.f-sup-contact');
+    const supCallLink = container.querySelector('.sup-call-link');
+    const supWhatsappLink = container.querySelector('.sup-whatsapp-link');
+    const editingBadge = container.querySelector('.editing-badge');
+    const submitBtn = container.querySelector('.submit-btn');
+    const cancelBtn = container.querySelector('.cancel-edit');
+
+    // Best-effort international format: strips everything but digits, drops a leading 0,
+    // and assumes a bare 7-digit number is a local Maldivian mobile (adds 960). Numbers
+    // that already include a country code (8+ digits) are left as typed.
+    function toInternationalDigits(raw){
+      let d = (raw||'').replace(/[^0-9]/g, '');
+      d = d.replace(/^0+/, '');
+      if(d.length === 7) d = '960' + d;
+      return d;
+    }
+    function waIconLink(phone){
+      const digits = toInternationalDigits(phone);
+      if(!digits) return '';
+      return `<a href="https://wa.me/${digits}" target="_blank" rel="noopener" style="color:#3E7D4F; vertical-align:middle;" title="Message on WhatsApp"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2zm5.83 14.1c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.02.24-3.44-.72-2.9-1.15-4.76-4.1-4.9-4.3-.14-.19-1.17-1.55-1.17-2.96s.72-2.1 1-2.39c.24-.25.53-.31.7-.31.18 0 .35 0 .5.01.16.01.38-.06.6.45.24.57.8 1.98.87 2.12.07.15.11.32.02.51-.09.19-.14.31-.28.47-.14.16-.29.36-.42.48-.14.13-.28.28-.12.55.16.27.71 1.18 1.53 1.9 1.05.94 1.94 1.24 2.21 1.38.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.35-.22.6-.13.24.09 1.55.73 1.82.86.27.13.44.2.51.31.07.11.07.66-.17 1.34z"/></svg></a>`;
+    }
+    function wireCallLink(input, callLink, waLink){
+      function update(){
+        const v = input.value.trim();
+        if(v){
+          const digits = toInternationalDigits(v);
+          callLink.href = 'tel:+' + digits;
+          callLink.classList.remove('hidden');
+          if(waLink){ waLink.href = 'https://wa.me/' + digits; waLink.classList.remove('hidden'); }
+        }else{
+          callLink.classList.add('hidden');
+          if(waLink) waLink.classList.add('hidden');
+        }
+      }
+      input.addEventListener('input', update);
+      update();
+    }
+    wireCallLink(fExpatPhone, expatCallLink, expatWhatsappLink);
+    wireCallLink(fSupContact, supCallLink, supWhatsappLink);
+    const saveStatus = container.querySelector('.save-status');
+    const list = container.querySelector('.ledger-list');
+    const exportBtn = container.querySelector('.export');
+
+    // Photo pickers
+    const photoInputs = {}; // role -> {input, previewEl, file, existingUrl, defaultHTML}
+    container.querySelectorAll('.photo-file-input').forEach(input => {
+      const role = input.dataset.role;
+      const previewEl = container.querySelector(`.photo-preview[data-role="${role}-preview"]`);
+      photoInputs[role] = { input, previewEl, file: null, existingUrl: null, defaultHTML: previewEl.innerHTML };
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        if(!file) return;
+        photoInputs[role].file = file;
+        const reader = new FileReader();
+        reader.onload = (e) => { previewEl.innerHTML = `<img src="${e.target.result}" alt="">`; };
+        reader.readAsDataURL(file);
+      });
+    });
+    container.querySelectorAll('.photo-pick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const role = btn.dataset.target;
+        if(photoInputs[role]) photoInputs[role].input.click();
+      });
+    });
+
+    if(!opts.admin){
+      const heroRecentEl = container.querySelector('.hero-recent');
+      const searchWrapEl = container.querySelector('.search-wrap');
+      const filterChipEl = container.querySelector('.expiring-filter-chip');
+      const ledgerHeadEl = container.querySelector('.ledger-head');
+      const deleteAllPanelEl = container.querySelector('.delete-all-panel');
+      const importPanelEl = container.querySelector('.import-panel');
+
+      if(searchWrapEl) searchWrapEl.remove();
+      if(filterChipEl) filterChipEl.remove();
+      if(ledgerHeadEl) ledgerHeadEl.remove();
+      if(deleteAllPanelEl) deleteAllPanelEl.remove();
+      if(importPanelEl) importPanelEl.remove();
+      if(list) list.remove(); // full entry list stays populated in memory for internal logic, just not shown
+      if(heroRecentEl && form) form.after(heroRecentEl);
+    }
+
+    const fab = document.createElement('button');
+    fab.className = 'fab-new-entry';
+    fab.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>New entry';
+    fab.addEventListener('click', () => {
+      resetForm();
+      form.scrollIntoView({behavior:'smooth', block:'start'});
+      setTimeout(() => fExpatName.focus(), 350);
+    });
+    container.appendChild(fab);
+
+    let entries = [];
+    let editingId = null;
+
+    function resetForm(){
+      form.reset(); editingId = null;
+      submitBtn.textContent = 'Add entry';
+      cancelBtn.classList.add('hidden');
+      editingBadge.classList.add('hidden');
+      saveStatus.textContent = '';
+      expatCallLink.classList.add('hidden');
+      supCallLink.classList.add('hidden');
+      expatWhatsappLink.classList.add('hidden');
+      supWhatsappLink.classList.add('hidden');
+      Object.values(photoInputs).forEach(p => {
+        p.file = null; p.existingUrl = null;
+        p.previewEl.innerHTML = p.defaultHTML;
+        p.input.value = '';
+      });
+    }
+    cancelBtn.addEventListener('click', resetForm);
+
+    function daysUntil(dateStr){
+      if(!dateStr) return null;
+      const d = new Date(dateStr + 'T00:00:00');
+      if(isNaN(d.getTime())) return null;
+      return Math.floor((d.getTime() - Date.now()) / 86400000);
+    }
+    function docStatuses(e){
+      // Returns array of {label, days, status:'expired'|'expiring'} for docs that need attention.
+      const out = [];
+      const pd = daysUntil(e.expat_passport_expiry);
+      if(pd !== null && pd <= 30) out.push({ label:'Passport', days:pd, status: pd < 0 ? 'expired' : 'expiring' });
+      const wd = daysUntil(e.expat_work_permit_expiry);
+      if(wd !== null && wd <= 30) out.push({ label:'Work permit', days:wd, status: wd < 0 ? 'expired' : 'expiring' });
+      return out;
+    }
+    function worstStatus(statuses){
+      if(statuses.some(s => s.status === 'expired')) return 'expired';
+      if(statuses.length > 0) return 'expiring';
+      return null;
+    }
+
+    function renderStats(){
+      const totalEl = document.getElementById('stat-total');
+      const ctrEl = document.getElementById('stat-countries');
+      if(totalEl){ totalEl.textContent = entries.length; }
+      if(ctrEl){ ctrEl.textContent = new Set(entries.map(e => (e.expat_country||'').trim().toLowerCase()).filter(Boolean)).size; }
+      if(heroStatTotal){ heroStatTotal.textContent = entries.length; }
+      if(heroStatCountries){ heroStatCountries.textContent = new Set(entries.map(e => (e.expat_country||'').trim().toLowerCase()).filter(Boolean)).size; }
+
+      const withIssues = entries
+        .map(e => ({ e, statuses: docStatuses(e) }))
+        .filter(x => x.statuses.length > 0)
+        .sort((a, b) => Math.min(...a.statuses.map(s=>s.days)) - Math.min(...b.statuses.map(s=>s.days)));
+      if(heroStatExpiring) heroStatExpiring.textContent = withIssues.length;
+
+      if(heroAlertCard && heroAlertList){
+        if(withIssues.length === 0){
+          heroAlertCard.classList.add('hidden');
+        }else{
+          heroAlertCard.classList.remove('hidden');
+          const anyExpired = withIssues.some(x => worstStatus(x.statuses) === 'expired');
+          heroAlertCard.classList.toggle('has-expired', anyExpired);
+          heroAlertTitle.textContent = `${anyExpired ? 'Expired or expiring documents' : 'Documents expiring soon'} (${withIssues.length})`;
+          heroAlertList.innerHTML = withIssues.map(x => {
+            const worst = worstStatus(x.statuses);
+            const parts = x.statuses.map(s => `${s.label} ${s.status === 'expired' ? `expired ${Math.abs(s.days)}d ago` : `in ${s.days}d`}`).join(' &middot; ');
+            return `<div class="alert-row" data-id="${x.e.id}" style="cursor:pointer;"><span>${escapeHtml(x.e.expat_name)}</span><span class="expiry-badge ${worst}">${escapeHtml(parts)}</span></div>`;
+          }).join('');
+        }
+      }
+    }
+
+    function initials(name){
+      const parts = (name||'').trim().split(/\s+/).filter(Boolean);
+      if(parts.length === 0) return '?';
+      if(parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+    }
+
+    function relativeTime(ts){
+      if(!ts || !ts.toDate) return 'just now';
+      const diffMs = Date.now() - ts.toDate().getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if(mins < 1) return 'just now';
+      if(mins < 60) return `${mins} min ago`;
+      const hrs = Math.floor(mins / 60);
+      if(hrs < 24) return `${hrs} hr ago`;
+      const days = Math.floor(hrs / 24);
+      return `${days} d ago`;
+    }
+
+    function avatarHTML(e){
+      if(e.expat_recent_photo_url) return `<img src="${e.expat_recent_photo_url}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+      return escapeHtml(initials(e.expat_name));
+    }
+
+    function renderHeroRecent(){
+      if(!heroRecentList) return;
+      const recent = entries.slice(-5).reverse();
+      if(recent.length === 0){
+        heroRecentList.innerHTML = `<div class="hero-recent-empty">No entries yet — add the first one below.</div>`;
+        return;
+      }
+      heroRecentList.innerHTML = recent.map(e => `
+        <div class="hero-recent-row" data-id="${e.id}">
+          <div class="hero-avatar">${avatarHTML(e)}</div>
+          <div class="hero-recent-info">
+            <div class="hn">${escapeHtml(e.expat_name)}</div>
+            <div class="ht"><span class="live-dot"></span>${escapeHtml(relativeTime(e.created_at))}</div>
+          </div>
+          <button class="hero-recent-view" data-view-id="${e.id}">${opts.admin ? 'View' : 'Edit'}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>`).join('');
+    }
+
+    let showExpiringOnly = false;
+
+    function render(){
+      const q = searchInput.value.trim().toLowerCase();
+      let filtered = entries;
+      if(q){
+        filtered = filtered.filter(e =>
+          (e.expat_name||'').toLowerCase().includes(q) ||
+          (e.expat_country||'').toLowerCase().includes(q) ||
+          (e.expat_passport||'').toLowerCase().includes(q) ||
+          (e.expat_work_permit||'').toLowerCase().includes(q) ||
+          (e.expat_address||'').toLowerCase().includes(q) ||
+          (e.expat_phone||'').toLowerCase().includes(q) ||
+          (e.expat_passport_expiry||'').toLowerCase().includes(q) ||
+          (e.expat_work_permit_expiry||'').toLowerCase().includes(q) ||
+          (e.sup_name||'').toLowerCase().includes(q) ||
+          (e.sup_id||'').toLowerCase().includes(q) ||
+          (e.sup_permanent_address||'').toLowerCase().includes(q) ||
+          (e.sup_current_address||'').toLowerCase().includes(q) ||
+          (e.sup_contact||'').toLowerCase().includes(q)
+        );
+      }
+      if(showExpiringOnly){
+        filtered = filtered.filter(e => docStatuses(e).length > 0);
+      }
+      renderStats();
+      renderHeroRecent();
+      if(entries.length === 0){
+        list.innerHTML = `<div class="empty"><p>No entries yet. Add the first one above.</p></div>`;
+        return;
+      }
+      if(filtered.length === 0){
+        list.innerHTML = showExpiringOnly
+          ? `<div class="empty"><p>No expiring or expired documents right now.</p></div>`
+          : `<div class="empty"><p>No matches for "${escapeHtml(q)}".</p></div>`;
+        return;
+      }
+      list.innerHTML = filtered.map((e, i) => {
+        const statuses = docStatuses(e);
+        const worst = worstStatus(statuses);
+        return `
+        <div class="row" data-id="${e.id}">
+          <div class="num">${String(i+1).padStart(2,'0')}</div>
+          <div class="info">
+            <div class="name">${escapeHtml(e.expat_name)} ${worst ? `<span class="expiry-badge ${worst}">${worst === 'expired' ? 'Expired' : 'Expiring'}</span>` : ''}</div>
+            <div class="meta">
+              <span>${escapeHtml(e.expat_country||'')}</span><span class="pass">${escapeHtml(e.expat_passport||'')}</span>
+              ${e.expat_work_permit ? `<span>WP ${escapeHtml(e.expat_work_permit)}</span>` : ''}
+              ${e.expat_address ? `<span>${escapeHtml(e.expat_address)}</span>` : ''}
+              ${e.expat_phone ? `<span><a href="tel:+${toInternationalDigits(e.expat_phone)}" style="color:var(--teal-deep); text-decoration:none;">${escapeHtml(e.expat_phone)}</a> ${waIconLink(e.expat_phone)}</span>` : ''}
+            </div>
+            ${e.sup_name ? `<div class="meta" style="margin-top:3px;"><span style="color:var(--gold);">Supervisor: ${escapeHtml(e.sup_name)}</span>${e.sup_contact ? `<span><a href="tel:+${toInternationalDigits(e.sup_contact)}" style="color:var(--teal-deep); text-decoration:none;">${escapeHtml(e.sup_contact)}</a> ${waIconLink(e.sup_contact)}</span>` : ''}</div>` : ''}
+          </div>
+          <div class="actions">
+            <button class="icon-btn edit-btn" title="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+            <button class="icon-btn danger del-btn" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function loadEntries(){
+      db.collection('entries').orderBy('created_at','asc').get().then(snap => {
+        entries = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+        render();
+      }).catch(()=>{});
+    }
+    loadEntries();
+
+    entriesUnsub = db.collection('entries').orderBy('created_at','asc').onSnapshot((snap) => {
+      entries = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      render();
+    }, (err) => { console.error(err); });
+
+    async function uploadPhotoIfNeeded(role, entryId){
+      const p = photoInputs[role];
+      if(!p.file) return p.existingUrl || null; // no new photo chosen — keep existing (or null)
+      const ext = (p.file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+      const path = `entry-photos/${entryId}/${role}.${ext}`;
+      const ref = storage.ref().child(path);
+      await ref.put(p.file);
+      return await ref.getDownloadURL();
+    }
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const expat_name = fExpatName.value.trim();
+      const expat_country = fExpatCountry.value.trim();
+      const expat_passport = fExpatPassport.value.trim().toUpperCase();
+      const expat_passport_expiry = fExpatPassportExpiry.value || null;
+      const expat_work_permit = fExpatWorkPermit.value.trim();
+      const expat_work_permit_expiry = fExpatWorkPermitExpiry.value || null;
+      const expat_address = fExpatAddress.value.trim();
+      const expat_phone = fExpatPhone.value.trim();
+      const sup_name = fSupName.value.trim();
+      const sup_id = fSupId.value.trim();
+      const sup_permanent_address = fSupPermanentAddress.value.trim();
+      const sup_current_address = fSupCurrentAddress.value.trim();
+      const sup_contact = fSupContact.value.trim();
+      if(!expat_name || !expat_country || !expat_passport) return;
+
+      if(!editingId){
+        const dup = entries.find(e => (e.expat_passport||'').trim().toUpperCase() === expat_passport);
+        if(dup){
+          const proceed = confirm(`An entry with passport number "${expat_passport}" already exists (${dup.expat_name}). Add this as a separate entry anyway?`);
+          if(!proceed) return;
+        }
+      }
+
+      submitBtn.disabled = true;
+      saveStatus.textContent = 'Saving…';
+      try{
+        const entryId = editingId || crypto.randomUUID();
+        const hasNewPhotos = photoInputs['expat-passport-photo'].file || photoInputs['expat-recent-photo'].file || photoInputs['expat-workpermit-photo'].file;
+        if(hasNewPhotos) saveStatus.textContent = 'Uploading photos…';
+
+        const [passportPhotoURL, recentPhotoURL, workPermitPhotoURL] = await Promise.all([
+          uploadPhotoIfNeeded('expat-passport-photo', entryId),
+          uploadPhotoIfNeeded('expat-recent-photo', entryId),
+          uploadPhotoIfNeeded('expat-workpermit-photo', entryId)
+        ]);
+
+        const data = {
+          expat_name, expat_country, expat_passport, expat_passport_expiry,
+          expat_work_permit, expat_work_permit_expiry, expat_address, expat_phone,
+          expat_passport_photo_url: passportPhotoURL || null,
+          expat_recent_photo_url: recentPhotoURL || null,
+          expat_work_permit_photo_url: workPermitPhotoURL || null,
+          sup_name, sup_id, sup_permanent_address, sup_current_address, sup_contact,
+        };
+
+        if(editingId){
+          await db.collection('entries').doc(entryId).update(data);
+          showToast('Entry updated');
+        }else{
+          data.created_at = firebase.firestore.FieldValue.serverTimestamp();
+          data.created_by = auth.currentUser ? auth.currentUser.email : null;
+          await db.collection('entries').doc(entryId).set(data);
+          showToast('Entry added');
+        }
+        resetForm();
+        loadEntries();
+      }catch(e){
+        saveStatus.textContent = 'Could not save: ' + (e.message || 'unknown error');
+        showToast('Could not save — see the message below the form');
+      }finally{
+        submitBtn.disabled = false;
+      }
+    });
+
+    function loadEntryIntoForm(entry, id){
+      editingId = id;
+      fExpatName.value = entry.expat_name || ''; fExpatCountry.value = entry.expat_country || ''; fExpatPassport.value = entry.expat_passport || '';
+      fExpatPassportExpiry.value = entry.expat_passport_expiry || '';
+      fExpatWorkPermit.value = entry.expat_work_permit || ''; fExpatWorkPermitExpiry.value = entry.expat_work_permit_expiry || '';
+      fExpatAddress.value = entry.expat_address || '';
+      fExpatPhone.value = entry.expat_phone || '';
+      fExpatPhone.dispatchEvent(new Event('input'));
+      fSupName.value = entry.sup_name || ''; fSupId.value = entry.sup_id || '';
+      fSupPermanentAddress.value = entry.sup_permanent_address || ''; fSupCurrentAddress.value = entry.sup_current_address || '';
+      fSupContact.value = entry.sup_contact || '';
+      fSupContact.dispatchEvent(new Event('input'));
+
+      photoInputs['expat-passport-photo'].existingUrl = entry.expat_passport_photo_url || null;
+      photoInputs['expat-passport-photo'].file = null;
+      photoInputs['expat-passport-photo'].previewEl.innerHTML = entry.expat_passport_photo_url
+        ? `<img src="${entry.expat_passport_photo_url}" alt="">` : photoInputs['expat-passport-photo'].defaultHTML;
+
+      photoInputs['expat-recent-photo'].existingUrl = entry.expat_recent_photo_url || null;
+      photoInputs['expat-recent-photo'].file = null;
+      photoInputs['expat-recent-photo'].previewEl.innerHTML = entry.expat_recent_photo_url
+        ? `<img src="${entry.expat_recent_photo_url}" alt="">` : photoInputs['expat-recent-photo'].defaultHTML;
+
+      photoInputs['expat-workpermit-photo'].existingUrl = entry.expat_work_permit_photo_url || null;
+      photoInputs['expat-workpermit-photo'].file = null;
+      photoInputs['expat-workpermit-photo'].previewEl.innerHTML = entry.expat_work_permit_photo_url
+        ? `<img src="${entry.expat_work_permit_photo_url}" alt="">` : photoInputs['expat-workpermit-photo'].defaultHTML;
+
+      submitBtn.textContent = 'Save changes';
+      cancelBtn.classList.remove('hidden');
+      editingBadge.classList.remove('hidden');
+      saveStatus.textContent = '';
+      fExpatName.scrollIntoView({behavior:'smooth', block:'center'}); fExpatName.focus();
+    }
+
+    if(heroRecentList){
+      heroRecentList.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.hero-recent-view');
+        if(!btn) return;
+        const id = btn.dataset.viewId;
+        const entry = entries.find(e => e.id === id);
+        if(!entry) return;
+        if(opts.admin && list && list.isConnected){
+          searchInput.value = '';
+          render();
+          const targetRow = list.querySelector(`.row[data-id="${id}"]`);
+          if(targetRow){
+            targetRow.scrollIntoView({behavior:'smooth', block:'center'});
+            targetRow.style.transition = 'background-color .3s ease';
+            targetRow.style.backgroundColor = '#FBF0DE';
+            setTimeout(() => { targetRow.style.backgroundColor = ''; }, 1400);
+          }
+        }else{
+          loadEntryIntoForm(entry, id);
+        }
+      });
+    }
+
+    if(heroAlertList){
+      heroAlertList.addEventListener('click', (ev) => {
+        const row = ev.target.closest('.alert-row');
+        if(!row) return;
+        const id = row.dataset.id;
+        const entry = entries.find(e => e.id === id);
+        if(entry) loadEntryIntoForm(entry, id);
+      });
+    }
+
+    list.addEventListener('click', async (ev) => {
+      const row = ev.target.closest('.row');
+      if(!row) return;
+      const id = row.dataset.id;
+      const entry = entries.find(e => e.id === id);
+      if(!entry) return;
+      if(ev.target.closest('.edit-btn')){
+        loadEntryIntoForm(entry, id);
+      }
+      if(ev.target.closest('.del-btn')){
+        if(confirm(`Remove "${entry.expat_name}" from the dafthar?`)){
+          await db.collection('entries').doc(id).delete();
+          if(editingId === id) resetForm();
+          showToast('Entry deleted');
+          loadEntries();
+        }
+      }
+    });
+
+    searchInput.addEventListener('input', render);
+
+    const expiringFilterChip = container.querySelector('.expiring-filter-chip');
+    if(expiringFilterChip){
+      expiringFilterChip.addEventListener('click', () => {
+        showExpiringOnly = !showExpiringOnly;
+        expiringFilterChip.style.background = showExpiringOnly ? 'var(--rust)' : '#FBF0DE';
+        expiringFilterChip.style.color = showExpiringOnly ? '#fff' : 'var(--gold)';
+        expiringFilterChip.textContent = showExpiringOnly ? 'Showing expiring/expired only — tap to clear' : 'Show expiring/expired only';
+        render();
+      });
+    }
+
+    const heroStatExpiringCard = container.querySelector('.hero-stat-expiring-card');
+    if(heroStatExpiringCard){
+      heroStatExpiringCard.style.cursor = 'pointer';
+      heroStatExpiringCard.addEventListener('click', () => {
+        if(heroAlertCard && !heroAlertCard.classList.contains('hidden')){
+          heroAlertCard.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+      });
+    }
+
+    if(opts.admin){
+      const importToggle = container.querySelector('.import-toggle');
+      const importPanel = container.querySelector('.import-panel');
+      const importTextarea = container.querySelector('.import-textarea');
+      const importRunBtn = container.querySelector('.import-run');
+      const importCancelBtn = container.querySelector('.import-cancel');
+      const importStatus = container.querySelector('.import-status');
+
+      importToggle.addEventListener('click', () => importPanel.classList.toggle('hidden'));
+      importCancelBtn.addEventListener('click', () => {
+        importPanel.classList.add('hidden');
+        importTextarea.value = '';
+        importStatus.textContent = '';
+      });
+
+      function parseCsvLine(line){
+        const out = [];
+        let cur = '', inQuotes = false;
+        for(let i=0; i<line.length; i++){
+          const c = line[i];
+          if(inQuotes){
+            if(c === '"'){
+              if(line[i+1] === '"'){ cur += '"'; i++; } else { inQuotes = false; }
+            } else { cur += c; }
+          }else{
+            if(c === '"'){ inQuotes = true; }
+            else if(c === ','){ out.push(cur); cur = ''; }
+            else { cur += c; }
+          }
+        }
+        out.push(cur);
+        return out.map(s => s.trim());
+      }
+
+      importRunBtn.addEventListener('click', async () => {
+        const raw = importTextarea.value.trim();
+        if(!raw){ importStatus.textContent = 'Paste some names first.'; return; }
+        const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+
+        const firstLineCols = parseCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g,''));
+        const colIndex = (names) => {
+          for(const n of names){ const idx = firstLineCols.indexOf(n); if(idx > -1) return idx; }
+          return -1;
+        };
+        const hasNameHeader = colIndex(['fullname','name']) > -1;
+
+        let idxName, idxCountry=-1, idxPassport=-1, idxPassportExpiry=-1, idxWorkPermit=-1, idxWorkPermitExpiry=-1, idxAddress=-1, idxPhone=-1;
+        let idxSupName=-1, idxSupId=-1, idxSupPermanentAddress=-1, idxSupCurrentAddress=-1, idxSupContact=-1;
+        let dataLines;
+
+        if(hasNameHeader){
+          idxName = colIndex(['fullname','name']);
+          idxCountry = colIndex(['country']);
+          idxPassport = colIndex(['passportnumber','passport']);
+          idxPassportExpiry = colIndex(['passportexpiry']);
+          idxWorkPermit = colIndex(['workpermitnumber','workpermit']);
+          idxWorkPermitExpiry = colIndex(['workpermitexpiry']);
+          idxAddress = colIndex(['currentaddress','address']);
+          idxPhone = colIndex(['phonenumber','phone']);
+          idxSupName = colIndex(['supervisorfullname','supervisorname']);
+          idxSupId = colIndex(['supervisoridnumber','supervisorid']);
+          idxSupPermanentAddress = colIndex(['supervisorpermanentaddress']);
+          idxSupCurrentAddress = colIndex(['supervisorcurrentaddress']);
+          idxSupContact = colIndex(['supervisorcontactnumber','supervisorcontact','supervisorphone']);
+          dataLines = lines.slice(1);
+        }else{
+          idxName = 0;
+          dataLines = lines;
+        }
+
+        if(dataLines.length === 0){ importStatus.textContent = 'No names found to import.'; return; }
+
+        importRunBtn.disabled = true;
+        let added = 0, skipped = 0;
+        const creatorEmail = auth.currentUser ? auth.currentUser.email : null;
+        for(let i=0; i<dataLines.length; i++){
+          const line = dataLines[i];
+          const cols = hasNameHeader ? parseCsvLine(line) : [line.replace(/^["']|["']$/g,'')];
+          const name = (cols[idxName] || '').trim();
+          if(!name){ skipped++; continue; }
+          const entryId = crypto.randomUUID();
+          const entry = {
+            expat_name: name,
+            expat_country: idxCountry > -1 ? (cols[idxCountry] || '').trim() : '',
+            expat_passport: idxPassport > -1 ? (cols[idxPassport] || '').trim().toUpperCase() : '',
+            expat_passport_expiry: idxPassportExpiry > -1 ? ((cols[idxPassportExpiry] || '').trim() || null) : null,
+            expat_work_permit: idxWorkPermit > -1 ? (cols[idxWorkPermit] || '').trim() : '',
+            expat_work_permit_expiry: idxWorkPermitExpiry > -1 ? ((cols[idxWorkPermitExpiry] || '').trim() || null) : null,
+            expat_address: idxAddress > -1 ? (cols[idxAddress] || '').trim() : '',
+            expat_phone: idxPhone > -1 ? (cols[idxPhone] || '').trim() : '',
+            sup_name: idxSupName > -1 ? (cols[idxSupName] || '').trim() : '',
+            sup_id: idxSupId > -1 ? (cols[idxSupId] || '').trim() : '',
+            sup_permanent_address: idxSupPermanentAddress > -1 ? (cols[idxSupPermanentAddress] || '').trim() : '',
+            sup_current_address: idxSupCurrentAddress > -1 ? (cols[idxSupCurrentAddress] || '').trim() : '',
+            sup_contact: idxSupContact > -1 ? (cols[idxSupContact] || '').trim() : '',
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            created_by: creatorEmail
+          };
+          try{
+            await db.collection('entries').doc(entryId).set(entry);
+            added++;
+          }catch(e){ skipped++; }
+          importStatus.textContent = `Importing… ${added} added so far.`;
+        }
+        importRunBtn.disabled = false;
+        importStatus.textContent = `Done — ${added} entries added${skipped ? `, ${skipped} skipped` : ''}.`;
+        importTextarea.value = '';
+        showToast(`${added} entries imported`);
+        loadEntries();
+      });
+    }
+
+    if(opts.admin){
+      const deleteAllBtn = container.querySelector('.delete-all-btn');
+      const deleteAllPanel = container.querySelector('.delete-all-panel');
+      const deleteAllConfirm = container.querySelector('.delete-all-confirm');
+      const deleteAllRun = container.querySelector('.delete-all-run');
+      const deleteAllCancel = container.querySelector('.delete-all-cancel');
+      const deleteAllStatus = container.querySelector('.delete-all-status');
+
+      deleteAllBtn.addEventListener('click', () => {
+        deleteAllPanel.classList.toggle('hidden');
+        deleteAllConfirm.value = '';
+        deleteAllStatus.textContent = '';
+      });
+      deleteAllCancel.addEventListener('click', () => {
+        deleteAllPanel.classList.add('hidden');
+        deleteAllConfirm.value = '';
+        deleteAllStatus.textContent = '';
+      });
+
+      deleteAllRun.addEventListener('click', async () => {
+        if(deleteAllConfirm.value.trim() !== 'DELETE ALL'){
+          deleteAllStatus.textContent = 'Type DELETE ALL exactly (in capitals) to confirm.';
+          return;
+        }
+        if(entries.length === 0){
+          deleteAllStatus.textContent = 'There are no entries to delete.';
+          return;
+        }
+        deleteAllRun.disabled = true;
+        deleteAllStatus.textContent = `Deleting ${entries.length} entries…`;
+        try{
+          // Firestore batches max out at 500 operations, so chunk to be safe.
+          const chunkSize = 400;
+          for(let i=0; i<entries.length; i += chunkSize){
+            const batch = db.batch();
+            const chunk = entries.slice(i, i + chunkSize);
+            chunk.forEach(e => batch.delete(db.collection('entries').doc(e.id)));
+            await batch.commit();
+            deleteAllStatus.textContent = `Deleted ${Math.min(i + chunkSize, entries.length)} of ${entries.length}…`;
+          }
+          deleteAllStatus.textContent = 'All entries deleted.';
+          deleteAllConfirm.value = '';
+          showToast('All entries deleted');
+          setTimeout(() => deleteAllPanel.classList.add('hidden'), 1200);
+          loadEntries();
+        }catch(e){
+          deleteAllStatus.textContent = 'Something went wrong deleting entries. Please try again.';
+        }
+        deleteAllRun.disabled = false;
+      });
+    }
+
+    exportBtn.addEventListener('click', () => {
+      if(entries.length === 0){ showToast('Nothing to export yet'); return; }
+      const header = ['#','FullName','Country','PassportNumber','PassportExpiry','WorkPermitNumber','WorkPermitExpiry','CurrentAddress','PhoneNumber','PassportPhotoURL','RecentPhotoURL','WorkPermitPhotoURL','SupervisorFullName','SupervisorIDNumber','SupervisorPermanentAddress','SupervisorCurrentAddress','SupervisorContactNumber'];
+      const rows = entries.map((e,i) => [
+        i+1, e.expat_name||'', e.expat_country||'', e.expat_passport||'', e.expat_passport_expiry||'',
+        e.expat_work_permit||'', e.expat_work_permit_expiry||'', e.expat_address||'', e.expat_phone||'',
+        e.expat_passport_photo_url||'', e.expat_recent_photo_url||'', e.expat_work_permit_photo_url||'',
+        e.sup_name||'', e.sup_id||'', e.sup_permanent_address||'', e.sup_current_address||'', e.sup_contact||''
+      ]);
+      const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'bidheyseenge_dafthar_' + new Date().toISOString().slice(0,10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      showToast('CSV exported');
+    });
+
+    // ---------- PASSPORT SCAN (OCR) ----------
+    const scanCameraBtn = container.querySelector('.scan-camera-btn');
+    const scanUploadBtn = container.querySelector('.scan-upload-btn');
+    const scanCameraInput = container.querySelector('.scan-camera-input');
+    const scanUploadInput = container.querySelector('.scan-upload-input');
+    const scanStatus = container.querySelector('.scan-status');
+
+    scanCameraBtn.addEventListener('click', () => scanCameraInput.click());
+    scanUploadBtn.addEventListener('click', () => scanUploadInput.click());
+    scanCameraInput.addEventListener('change', () => processPassportFile(scanCameraInput));
+    scanUploadInput.addEventListener('change', () => processPassportFile(scanUploadInput));
+
+    async function processPassportFile(inputEl){
+      const file = inputEl.files[0];
+      if(!file) return;
+      scanStatus.style.display = 'block';
+      scanStatus.textContent = 'Reading passport photo… this can take up to 30 seconds.';
+      scanCameraBtn.disabled = true; scanUploadBtn.disabled = true;
+      try{
+        photoInputs['expat-passport-photo'].file = file;
+        const reader = new FileReader();
+        reader.onload = (e) => { photoInputs['expat-passport-photo'].previewEl.innerHTML = `<img src="${e.target.result}" alt="">`; };
+        reader.readAsDataURL(file);
+
+        const result = await Tesseract.recognize(file, 'eng');
+        const text = result.data.text || '';
+        const parsed = parsePassportMRZ(text);
+        if(!parsed){
+          scanStatus.textContent = "Couldn't read the passport clearly. Try a clearer, well-lit, straight-on photo of the main ID page — or just enter details manually below.";
+        }else{
+          if(parsed.name) fExpatName.value = parsed.name;
+          if(parsed.country) fExpatCountry.value = parsed.country;
+          if(parsed.passport) fExpatPassport.value = parsed.passport;
+          if(parsed.passportExpiry) fExpatPassportExpiry.value = parsed.passportExpiry;
+          scanStatus.textContent = 'Filled in from scan — please double check the fields below before saving, OCR is not always perfect.';
+          fExpatName.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+      }catch(e){
+        scanStatus.textContent = 'Could not process that photo. Please try again or enter details manually.';
+      }finally{
+        scanCameraBtn.disabled = false; scanUploadBtn.disabled = false;
+        inputEl.value = '';
+      }
+    }
+
+    // ---------- WORK PERMIT SCAN (generic document OCR) ----------
+    const wpScanCameraBtn = container.querySelector('.wp-scan-camera-btn');
+    const wpScanUploadBtn = container.querySelector('.wp-scan-upload-btn');
+    const wpScanCameraInput = container.querySelector('.wp-scan-camera-input');
+    const wpScanUploadInput = container.querySelector('.wp-scan-upload-input');
+    const wpScanStatus = container.querySelector('.wp-scan-status');
+
+    wpScanCameraBtn.addEventListener('click', () => wpScanCameraInput.click());
+    wpScanUploadBtn.addEventListener('click', () => wpScanUploadInput.click());
+    wpScanCameraInput.addEventListener('change', () => processWorkPermitFile(wpScanCameraInput));
+    wpScanUploadInput.addEventListener('change', () => processWorkPermitFile(wpScanUploadInput));
+
+    async function processWorkPermitFile(inputEl){
+      const file = inputEl.files[0];
+      if(!file) return;
+      wpScanStatus.style.display = 'block';
+      wpScanStatus.textContent = 'Reading document photo… this can take up to 30 seconds.';
+      wpScanCameraBtn.disabled = true; wpScanUploadBtn.disabled = true;
+      try{
+        photoInputs['expat-workpermit-photo'].file = file;
+        const reader = new FileReader();
+        reader.onload = (e) => { photoInputs['expat-workpermit-photo'].previewEl.innerHTML = `<img src="${e.target.result}" alt="">`; };
+        reader.readAsDataURL(file);
+
+        const result = await Tesseract.recognize(file, 'eng');
+        const text = result.data.text || '';
+        const parsed = parseGenericDocument(text);
+        if(!parsed || (!parsed.docNumber && !parsed.expiryDate)){
+          wpScanStatus.textContent = "Couldn't confidently read a permit number or expiry date from that photo — the photo is still saved, just enter the details manually below.";
+        }else{
+          if(parsed.docNumber) fExpatWorkPermit.value = parsed.docNumber;
+          if(parsed.expiryDate) fExpatWorkPermitExpiry.value = parsed.expiryDate;
+          wpScanStatus.textContent = 'Filled in from scan where possible — please double check before saving, this kind of document has no fixed format so OCR is only a best guess.';
+        }
+      }catch(e){
+        wpScanStatus.textContent = 'Could not process that photo. The photo is still saved — just enter details manually.';
+      }finally{
+        wpScanCameraBtn.disabled = false; wpScanUploadBtn.disabled = false;
+        inputEl.value = '';
+      }
+    }
+
+    // Best-effort reader for documents with no fixed layout (work permits, ID cards, etc).
+    // Looks for a date near words like "expiry/expires/valid until", and a permit-like
+    // code near words like "permit/no/number/id". Much less reliable than the passport
+    // MRZ parser above, since these documents aren't standardized.
+    function parseGenericDocument(rawText){
+      const upper = rawText.toUpperCase();
+      const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+      const monthNames = 'JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC';
+      const datePatterns = [
+        /\b(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})\b/,                       // YYYY-MM-DD
+        /\b(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})\b/,                       // DD-MM-YYYY
+        new RegExp('\\b(\\d{1,2})\\s+(' + monthNames + ')[A-Z]*\\s+(\\d{4})\\b', 'i') // 12 JAN 2027
+      ];
+
+      function toIsoDate(m, patternIndex){
+        try{
+          if(patternIndex === 0) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+          if(patternIndex === 1) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+          if(patternIndex === 2){
+            const months = { JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12' };
+            const mon = months[m[2].toUpperCase().slice(0,3)];
+            if(!mon) return null;
+            return `${m[3]}-${mon}-${String(m[1]).padStart(2,'0')}`;
+          }
+        }catch(e){ return null; }
+        return null;
+      }
+
+      // Find the line mentioning expiry, then search that line + the next one for a date.
+      let expiryDate = null;
+      const expiryLineIdx = lines.findIndex(l => /EXPIR|VALID\s*(UNTIL|TO|THRU)|VALID\s*DATE/i.test(l));
+      const searchSpace = expiryLineIdx > -1 ? lines.slice(expiryLineIdx, expiryLineIdx + 2).join(' ') : upper;
+      for(let p = 0; p < datePatterns.length; p++){
+        const m = searchSpace.match(datePatterns[p]);
+        if(m){ expiryDate = toIsoDate(m, p); if(expiryDate) break; }
+      }
+      // Fall back to the last date found anywhere in the document if no labeled one matched.
+      if(!expiryDate){
+        for(let p = 0; p < datePatterns.length; p++){
+          const all = [...upper.matchAll(new RegExp(datePatterns[p].source, 'gi'))];
+          if(all.length){ expiryDate = toIsoDate(all[all.length-1], p); if(expiryDate) break; }
+        }
+      }
+
+      // Find a permit/ID-like code: a line mentioning permit/no/number/id, then pull an
+      // alphanumeric token of 5+ characters from that line or the next.
+      let docNumber = null;
+      const numberLineIdx = lines.findIndex(l => /PERMIT|WORK\s*ID|ID\s*NO|CARD\s*NO|NUMBER|NO\.?:?/i.test(l));
+      const numberSpace = numberLineIdx > -1 ? lines.slice(numberLineIdx, numberLineIdx + 2).join(' ') : rawText;
+      const tokenMatch = numberSpace.match(/\b[A-Z0-9]{2,}[-\/]?[A-Z0-9]{3,}\b/i);
+      if(tokenMatch) docNumber = tokenMatch[0].toUpperCase();
+
+      if(!docNumber && !expiryDate) return null;
+      return { docNumber, expiryDate };
+    }
+
+    const COUNTRY_CODES = {
+      IND:'India', BGD:'Bangladesh', NPL:'Nepal', LKA:'Sri Lanka', PAK:'Pakistan',
+      PHL:'Philippines', IDN:'Indonesia', THA:'Thailand', MMR:'Myanmar', VNM:'Vietnam',
+      CHN:'China', NGA:'Nigeria', KEN:'Kenya', EGY:'Egypt', ETH:'Ethiopia',
+      GBR:'United Kingdom', USA:'United States', CAN:'Canada', AUS:'Australia',
+      DEU:'Germany', FRA:'France', ITA:'Italy', ESP:'Spain', RUS:'Russia',
+      MDV:'Maldives', ARE:'United Arab Emirates', SAU:'Saudi Arabia', TUR:'Turkey',
+      MYS:'Malaysia', SGP:'Singapore', JPN:'Japan', KOR:'South Korea', BRA:'Brazil',
+      MEX:'Mexico', ZAF:'South Africa', NPA:'Nepal'
+    };
+
+    function parsePassportMRZ(rawText){
+      const lines = rawText.split(/\r?\n/)
+        .map(l => l.toUpperCase().replace(/[^A-Z0-9<]/g,''))
+        .filter(l => l.length >= 30);
+
+      let line1 = lines.find(l => /^P[A-Z<]/.test(l) && l.includes('<<'));
+      let line2Index = line1 ? lines.indexOf(line1) + 1 : -1;
+      let line2 = line2Index > -1 ? lines[line2Index] : lines.find(l => /^[A-Z0-9<]{9}[0-9<][A-Z]{3}[0-9]{6}/.test(l));
+
+      if(!line1 && !line2) return null;
+
+      let name = null, country = null, passport = null, passportExpiry = null;
+
+      if(line1){
+        const m = line1.match(/^P<([A-Z]{3})([A-Z<]+)$/) || line1.match(/^P[A-Z]?([A-Z]{3})([A-Z<]+)$/);
+        if(m){
+          const countryCode = m[1];
+          country = COUNTRY_CODES[countryCode] || null;
+          const nameParts = m[2].split('<<').filter(Boolean);
+          if(nameParts.length >= 2){
+            const surname = nameParts[0].replace(/</g,' ').trim();
+            const given = nameParts.slice(1).join(' ').replace(/</g,' ').trim();
+            name = [given, surname].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+          }else if(nameParts.length === 1){
+            name = nameParts[0].replace(/</g,' ').trim();
+          }
+        }
+      }
+
+      if(line2){
+        // TD3 layout: passport no (9) + check digit, nationality (3), DOB YYMMDD (6) + check digit,
+        // sex (1), expiry YYMMDD (6) + check digit, ...
+        const m2 = line2.match(/^([A-Z0-9<]{9})[0-9<]([A-Z]{3})([0-9]{6})[0-9][MFX<]([0-9]{6})/);
+        if(m2){
+          passport = m2[1].replace(/</g,'').trim();
+          if(!country){ country = COUNTRY_CODES[m2[2]] || null; }
+          const expiryYYMMDD = m2[4];
+          if(expiryYYMMDD){
+            const yy = parseInt(expiryYYMMDD.slice(0,2), 10);
+            const mm = expiryYYMMDD.slice(2,4);
+            const dd = expiryYYMMDD.slice(4,6);
+            // MRZ 2-digit years: assume 00-79 -> 2000s, 80-99 -> 1900s (standard convention).
+            const yyyy = yy <= 79 ? 2000 + yy : 1900 + yy;
+            if(mm >= '01' && mm <= '12' && dd >= '01' && dd <= '31'){
+              passportExpiry = `${yyyy}-${mm}-${dd}`;
+            }
+          }
+        }else{
+          // Fallback: at least try to get the passport number if the full pattern didn't match.
+          const m2b = line2.match(/^([A-Z0-9<]{9})[0-9<]([A-Z]{3})/);
+          if(m2b){
+            passport = m2b[1].replace(/</g,'').trim();
+            if(!country){ country = COUNTRY_CODES[m2b[2]] || null; }
+          }
+        }
+      }
+
+      if(!name && !passport) return null;
+      return { name, country, passport, passportExpiry };
+    }
+  }
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  }
+}catch(e){
+  bootFail(e.message + (e.stack ? ('\n\n' + e.stack) : ''));
+}
+})();
+</script>
+</body>
+</html>
+

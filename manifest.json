@@ -1,0 +1,14 @@
+{
+  "name": "Bidheyseenge Dafthar - Expatriate Registry",
+  "short_name": "Dafthar",
+  "description": "Login-protected, admin-approved registry for expatriate and supervisor information.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F3E8",
+  "theme_color": "#0E4F4F",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
