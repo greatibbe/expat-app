@@ -615,12 +615,11 @@ try{
     $('#signup-card').classList.remove('hidden'); $('#login-card').classList.add('hidden');
   });
 
-  // Firebase Auth only understands email+password under the hood, so a username like
-  // "ma_4655" is converted to a hidden internal email — the person never sees this.
-  const USERNAME_EMAIL_DOMAIN = '@dafthar.local';
-  function usernameToAuthEmail(username){
-    return username.trim().toLowerCase().replace(/[^a-z0-9_]/g,'') + USERNAME_EMAIL_DOMAIN;
-  }
+  // Accounts are registered under the person's REAL email (required for password reset
+  // emails to actually work), but people log in by typing just a username like "ma_4655".
+  // A small public "usernames" collection maps username -> real email so login can look
+  // it up before signing in. Only a `get` on a known exact ID is allowed (no listing), so
+  // this can't be used to browse/enumerate accounts.
   function nameToInitials(name){
     const words = name.trim().split(/\s+/).filter(Boolean);
     if(words.length === 0) return '';
@@ -650,9 +649,15 @@ try{
   $('#login-form').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const errEl = $('#login-error'); errEl.classList.remove('show');
-    const username = $('#li-username').value.trim();
+    const username = $('#li-username').value.trim().toLowerCase();
     try{
-      await auth.signInWithEmailAndPassword(usernameToAuthEmail(username), $('#li-pass').value);
+      const lookupDoc = await db.collection('usernames').doc(username).get();
+      if(!lookupDoc.exists){
+        errEl.textContent = 'No account found with that username.';
+        errEl.classList.add('show');
+        return;
+      }
+      await auth.signInWithEmailAndPassword(lookupDoc.data().email, $('#li-pass').value);
     }catch(error){
       errEl.textContent = friendlyAuthError(error); errEl.classList.add('show');
     }
@@ -664,17 +669,23 @@ try{
     const name = $('#su-name').value.trim();
     const serviceNumber = $('#su-servicenumber').value.trim();
     const recoveryEmail = $('#su-recovery-email').value.trim();
-    const username = nameAndServiceNumberToUsername(name, serviceNumber);
-    const authEmail = usernameToAuthEmail(username);
+    const username = nameAndServiceNumberToUsername(name, serviceNumber).toLowerCase();
     const pass = $('#su-pass').value;
     if(!username){ errEl.textContent = 'Please enter your name and service number.'; errEl.classList.add('show'); return; }
     try{
-      const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
+      const existing = await db.collection('usernames').doc(username).get();
+      if(existing.exists){
+        errEl.textContent = 'That username is already taken (same name + service number as an existing account). Double-check your service number, or contact the administrator.';
+        errEl.classList.add('show');
+        return;
+      }
+      const cred = await auth.createUserWithEmailAndPassword(recoveryEmail, pass);
       await db.collection('users').doc(cred.user.uid).set({
         name, username, service_number: serviceNumber, recovery_email: recoveryEmail,
         status:'pending', role:'user',
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
+      await db.collection('usernames').doc(username).set({ email: recoveryEmail });
       // onAuthStateChanged below picks this up and routes automatically.
     }catch(error){
       errEl.textContent = friendlyAuthError(error); errEl.classList.add('show');
@@ -683,8 +694,8 @@ try{
 
   function friendlyAuthError(e){
     const map = {
-      'auth/email-already-in-use':'An account with this exact name + service number already exists — try logging in instead. If this is a different person, double-check the service number.',
-      'auth/invalid-email':'That username or service number looks invalid.',
+      'auth/email-already-in-use':'That email address is already registered to another account.',
+      'auth/invalid-email':'That email address looks invalid.',
       'auth/weak-password':'Password should be at least 6 characters.',
       'auth/wrong-password':'Incorrect username or password.',
       'auth/user-not-found':'No account found with that username.',
