@@ -30,6 +30,19 @@ service cloud.firestore {
       allow update, delete: if isApprovedAdmin();
     }
 
+    // Public username -> email lookup, so people can log in by typing just a username.
+    // Only a `get` on one exact, known document ID is allowed — never a `list` — so this
+    // can't be used to browse or enumerate every account, only to resolve a username you
+    // already know into the email needed for signInWithEmailAndPassword.
+    match /usernames/{username} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['email'])
+                    && request.resource.data.email is string;
+      allow update, delete: if false;
+    }
+
     // The actual registry data. Only approved users (or admins) can read/write it.
     match /entries/{entryId} {
       allow read, write: if isApprovedUser();
