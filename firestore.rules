@@ -34,5 +34,16 @@ service cloud.firestore {
     match /entries/{entryId} {
       allow read, write: if isApprovedUser();
     }
+
+    // Password reset requests. Created from the login screen, before anyone is signed in,
+    // so creation must be open — but restricted to the exact shape a legitimate request has.
+    // Only an admin can see the list or mark one as sent.
+    match /password_reset_requests/{requestId} {
+      allow create: if request.resource.data.status == 'pending'
+                    && request.resource.data.username is string
+                    && request.resource.data.username.size() > 0
+                    && request.resource.data.username.size() < 60;
+      allow read, update, delete: if isApprovedAdmin();
+    }
   }
 }
