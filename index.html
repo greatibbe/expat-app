@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Expatriate Dafthar</title>
+<title>Bidheyseenge Dafthar Hirilandhoo</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dafthar">
@@ -100,8 +100,8 @@
   .status-screen p{font-size:14px; color:var(--ink-soft); line-height:1.5; margin:0 0 20px;}
 
   /* Admin */
-  .admin-nav{display:flex; gap:4px; background:var(--paper-dim); border-radius:10px; padding:4px; margin-bottom:16px;}
-  .admin-nav button{flex:1; background:none; padding:9px; border-radius:7px; font-size:13px; font-weight:600; color:var(--ink-soft); position:relative;}
+  .admin-nav{display:flex; flex-wrap:wrap; gap:4px; background:var(--paper-dim); border-radius:10px; padding:4px; margin-bottom:16px;}
+  .admin-nav button{flex:1; min-width:44%; background:none; padding:8px 4px; border-radius:7px; font-size:12px; font-weight:600; color:var(--ink-soft); position:relative;}
   .admin-nav button.active{background:var(--white); color:var(--teal-deep); box-shadow:0 1px 2px rgba(0,0,0,0.06);}
   .badge-count{background:var(--rust); color:#fff; font-size:10px; font-weight:700; border-radius:20px; padding:1px 6px; margin-left:5px;}
   .user-row{display:flex; justify-content:space-between; align-items:center; padding:13px 14px; border-bottom:1px solid var(--line); gap:10px;}
@@ -228,7 +228,7 @@
     <div class="badge">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F7F3E8" stroke-width="2"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12h6M9 16h6M9 8h3"/></svg>
     </div>
-    <h1>Bidheyseenge Dafthar</h1>
+    <h1>Bidheyseenge Dafthar Hirilandhoo</h1>
     <p>Sign in to access the shared expatriate registry.</p>
   </div>
 
@@ -239,11 +239,23 @@
 
   <div class="card" id="login-card">
     <form id="login-form">
-      <div class="field"><label for="li-username">Username</label><input type="text" id="li-username" required autocomplete="username" autocapitalize="none" placeholder="e.g. ia_1634"></div>
+      <div class="field"><label for="li-username">Username</label><input type="text" id="li-username" required autocomplete="username" autocapitalize="none" placeholder="e.g. ma_4655"></div>
       <div class="field"><label for="li-pass">Password</label><input type="password" id="li-pass" required autocomplete="current-password"></div>
       <div class="btn-row"><button type="submit" class="btn-primary">Log in</button></div>
       <div class="error-msg" id="login-error"></div>
+      <button type="button" class="link-btn" id="forgot-password-toggle" style="margin-top:6px;">Forgot password?</button>
     </form>
+
+    <div class="hidden" id="forgot-password-panel" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:0 0 10px;">
+        Enter your username. The administrator will need to approve the request before a reset email goes out to the address you signed up with.
+      </p>
+      <div class="field"><label for="fp-username">Username</label><input type="text" id="fp-username" autocomplete="username" autocapitalize="none" placeholder="e.g. ma_4655"></div>
+      <div class="btn-row">
+        <button type="button" class="btn-primary" id="forgot-password-submit">Request password reset</button>
+      </div>
+      <div class="error-msg" id="forgot-password-status"></div>
+    </div>
   </div>
 
   <div class="card hidden" id="signup-card">
@@ -253,7 +265,8 @@
     <form id="signup-form">
       <div class="field"><label for="su-name">Your name</label><input type="text" id="su-name" required autocomplete="name"></div>
       <div class="field"><label for="su-servicenumber">Service number</label><input type="text" id="su-servicenumber" required autocomplete="off" inputmode="numeric" placeholder="e.g. 1634"></div>
-      <div style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 12px;">Your login username will be: <strong id="su-username-preview">ia_...</strong></div>
+      <div style="font-size:12.5px; color:var(--ink-soft); margin:-6px 0 12px;">Your login username will be: <strong id="su-username-preview">...</strong></div>
+      <div class="field"><label for="su-recovery-email">Email (for password recovery only)</label><input type="email" id="su-recovery-email" required autocomplete="email" placeholder="you@example.com"></div>
       <div class="field"><label for="su-pass">Password</label><input type="password" id="su-pass" required minlength="6" autocomplete="new-password"></div>
       <div class="btn-row"><button type="submit" class="btn-primary">Request access</button></div>
       <div class="error-msg" id="signup-error"></div>
@@ -296,6 +309,7 @@
     <div class="admin-nav">
       <button class="active" id="nav-approvals">Approvals <span class="badge-count hidden" id="pending-badge">0</span></button>
       <button id="nav-allusers">All users</button>
+      <button id="nav-resets">Resets <span class="badge-count hidden" id="resets-badge">0</span></button>
       <button id="nav-registry">Registry</button>
     </div>
 
@@ -305,6 +319,10 @@
 
     <div id="admin-users-panel" class="hidden">
       <div class="ledger" id="all-users-list"></div>
+    </div>
+
+    <div id="admin-resets-panel" class="hidden">
+      <div class="ledger" id="resets-list"></div>
     </div>
 
     <div id="admin-registry-panel" class="hidden"></div>
@@ -317,7 +335,7 @@
     <div class="head-row">
       <div>
         <div class="eyebrow"><span class="dot"></span>Expatriate Registry &middot; 2026</div>
-        <h1>Bidheyseenge Dafthar</h1>
+        <h1>Bidheyseenge Dafthar Hirilandhoo</h1>
         <div class="sub" id="app-user-email"></div>
       </div>
       <button class="signout" id="app-signout">Sign out</button>
@@ -369,9 +387,16 @@
     </div>
   </div>
 
-  <div class="search-wrap"><input type="text" class="search-input" placeholder="Search by name, country, passport, work permit, address, phone or supervisor..." autocomplete="off"></div>
-  <button type="button" class="expiring-filter-chip" style="font-size:12px; font-weight:600; color:var(--gold); background:#FBF0DE; border:none; border-radius:20px; padding:7px 14px; margin:-8px 0 16px;">Show expiring/expired only</button>
-  <form class="entry-form">
+  <div class="list-section-a">
+    <div class="search-wrap"><input type="text" class="search-input" placeholder="Search by name, country, passport, work permit, address, phone or supervisor..." autocomplete="off"></div>
+    <button type="button" class="expiring-filter-chip" style="font-size:12px; font-weight:600; color:var(--gold); background:#FBF0DE; border:none; border-radius:20px; padding:7px 14px; margin:-8px 0 16px;">Show expiring/expired only</button>
+  </div>
+  <form class="entry-form hidden">
+    <div class="btn-row" style="margin-bottom:14px;">
+      <button type="button" class="btn-ghost form-back-btn" style="flex:none; display:flex; align-items:center; gap:6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to registry
+      </button>
+    </div>
     <div class="card">
       <h2 class="card-title">Expatriate's Information</h2>
       <div class="section-sub">ބިދޭސީންގެ މަޢުލޫމާތު</div>
@@ -474,6 +499,7 @@
       <div class="save-status" style="font-size:12.5px; color:var(--ink-soft); margin-top:8px;"></div>
     </div>
   </form>
+  <div class="list-section-b">
   <div class="ledger-head">
     <h2>Dafthar</h2>
     <div style="display:flex; gap:14px; align-items:center;">
@@ -509,6 +535,7 @@
   </div>
   <div class="ledger ledger-list"></div>
   <div class="footer-note">Shared registry — synced securely for all approved users.</div>
+  </div>
 
   <div class="detail-modal-overlay hidden">
     <div class="detail-modal-card">
@@ -589,23 +616,35 @@ try{
   });
 
   // Firebase Auth only understands email+password under the hood, so a username like
-  // "ia_1634" is converted to a hidden internal email — the person never sees this.
-  const USERNAME_PREFIX = 'ia_';
+  // "ma_4655" is converted to a hidden internal email — the person never sees this.
   const USERNAME_EMAIL_DOMAIN = '@dafthar.local';
   function usernameToAuthEmail(username){
     return username.trim().toLowerCase().replace(/[^a-z0-9_]/g,'') + USERNAME_EMAIL_DOMAIN;
   }
-  function serviceNumberToUsername(serviceNumber){
-    return USERNAME_PREFIX + serviceNumber.trim().replace(/[^0-9a-zA-Z]/g,'');
+  function nameToInitials(name){
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if(words.length === 0) return '';
+    let initials = words.map(w => w[0]).join('').toLowerCase();
+    if(initials.length < 2) initials = (words[0].slice(0,2) || words[0]).toLowerCase();
+    return initials;
+  }
+  function nameAndServiceNumberToUsername(name, serviceNumber){
+    const initials = nameToInitials(name);
+    const num = serviceNumber.trim().replace(/[^0-9a-zA-Z]/g,'');
+    if(!initials || !num) return '';
+    return initials + '_' + num;
   }
 
+  const suNameInput = $('#su-name');
   const suServiceNumberInput = $('#su-servicenumber');
   const suUsernamePreview = $('#su-username-preview');
+  function updateUsernamePreview(){
+    const u = nameAndServiceNumberToUsername(suNameInput.value, suServiceNumberInput.value);
+    suUsernamePreview.textContent = u || '...';
+  }
   if(suServiceNumberInput){
-    suServiceNumberInput.addEventListener('input', () => {
-      const v = suServiceNumberInput.value.trim();
-      suUsernamePreview.textContent = v ? serviceNumberToUsername(v) : 'ia_...';
-    });
+    suNameInput.addEventListener('input', updateUsernamePreview);
+    suServiceNumberInput.addEventListener('input', updateUsernamePreview);
   }
 
   $('#login-form').addEventListener('submit', async (ev) => {
@@ -624,13 +663,16 @@ try{
     const errEl = $('#signup-error'); errEl.classList.remove('show');
     const name = $('#su-name').value.trim();
     const serviceNumber = $('#su-servicenumber').value.trim();
-    const username = serviceNumberToUsername(serviceNumber);
+    const recoveryEmail = $('#su-recovery-email').value.trim();
+    const username = nameAndServiceNumberToUsername(name, serviceNumber);
     const authEmail = usernameToAuthEmail(username);
     const pass = $('#su-pass').value;
+    if(!username){ errEl.textContent = 'Please enter your name and service number.'; errEl.classList.add('show'); return; }
     try{
       const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
       await db.collection('users').doc(cred.user.uid).set({
-        name, username, service_number: serviceNumber, status:'pending', role:'user',
+        name, username, service_number: serviceNumber, recovery_email: recoveryEmail,
+        status:'pending', role:'user',
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
       // onAuthStateChanged below picks this up and routes automatically.
@@ -641,7 +683,7 @@ try{
 
   function friendlyAuthError(e){
     const map = {
-      'auth/email-already-in-use':'That service number is already registered — try logging in instead.',
+      'auth/email-already-in-use':'An account with this exact name + service number already exists — try logging in instead. If this is a different person, double-check the service number.',
       'auth/invalid-email':'That username or service number looks invalid.',
       'auth/weak-password':'Password should be at least 6 characters.',
       'auth/wrong-password':'Incorrect username or password.',
@@ -656,6 +698,31 @@ try{
   $('#rejected-signout').addEventListener('click', () => auth.signOut());
   $('#admin-signout').addEventListener('click', () => auth.signOut());
   $('#app-signout').addEventListener('click', () => auth.signOut());
+
+  // ---------- FORGOT PASSWORD (request -> admin approves -> reset email sent) ----------
+  $('#forgot-password-toggle').addEventListener('click', () => {
+    $('#forgot-password-panel').classList.toggle('hidden');
+    $('#forgot-password-status').classList.remove('show');
+  });
+  $('#forgot-password-submit').addEventListener('click', async () => {
+    const statusEl = $('#forgot-password-status');
+    statusEl.classList.remove('show');
+    const username = $('#fp-username').value.trim().toLowerCase();
+    if(!username){ statusEl.textContent = 'Please enter your username.'; statusEl.classList.add('show'); return; }
+    try{
+      await db.collection('password_reset_requests').add({
+        username, status:'pending', requested_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      statusEl.style.color = 'var(--green-ok)';
+      statusEl.textContent = 'Request sent. Once the administrator approves it, a password reset email will be sent to the address you signed up with.';
+      statusEl.classList.add('show');
+      $('#fp-username').value = '';
+    }catch(error){
+      statusEl.style.color = '';
+      statusEl.textContent = 'Could not send the request — please try again.';
+      statusEl.classList.add('show');
+    }
+  });
 
   // ---------- AUTH STATE ROUTING ----------
   let profileUnsub = null;
@@ -678,11 +745,11 @@ try{
       } else if(profile.status === 'rejected'){
         showView('view-rejected');
       } else if(profile.status === 'approved' && profile.role === 'admin'){
-        $('#admin-email').textContent = profile.username;
+        $('#admin-email').textContent = profile.name || profile.username;
         showView('view-admin');
         setupAdmin(profile);
       } else if(profile.status === 'approved'){
-        $('#app-user-email').textContent = profile.username;
+        $('#app-user-email').textContent = profile.name || profile.username;
         showView('view-app');
         setupUserRegistry(profile);
       }
@@ -693,20 +760,23 @@ try{
 
   // ---------- ADMIN PANEL ----------
   let adminUsersUnsub = null;
+  let adminResetsUnsub = null;
   function teardownAdmin(){
     if(adminUsersUnsub){ adminUsersUnsub(); adminUsersUnsub = null; }
+    if(adminResetsUnsub){ adminResetsUnsub(); adminResetsUnsub = null; }
   }
 
   function setupAdmin(profile){
     teardownAdmin();
-    const navApprovals = $('#nav-approvals'), navAll = $('#nav-allusers'), navRegistry = $('#nav-registry');
-    const panelApprovals = $('#admin-approvals-panel'), panelAll = $('#admin-users-panel'), panelRegistry = $('#admin-registry-panel');
+    const navApprovals = $('#nav-approvals'), navAll = $('#nav-allusers'), navResets = $('#nav-resets'), navRegistry = $('#nav-registry');
+    const panelApprovals = $('#admin-approvals-panel'), panelAll = $('#admin-users-panel'), panelResets = $('#admin-resets-panel'), panelRegistry = $('#admin-registry-panel');
 
     function setTab(tab){
-      [navApprovals, navAll, navRegistry].forEach(b => b.classList.remove('active'));
-      [panelApprovals, panelAll, panelRegistry].forEach(p => p.classList.add('hidden'));
+      [navApprovals, navAll, navResets, navRegistry].forEach(b => b.classList.remove('active'));
+      [panelApprovals, panelAll, panelResets, panelRegistry].forEach(p => p.classList.add('hidden'));
       if(tab==='approvals'){ navApprovals.classList.add('active'); panelApprovals.classList.remove('hidden'); }
       if(tab==='all'){ navAll.classList.add('active'); panelAll.classList.remove('hidden'); }
+      if(tab==='resets'){ navResets.classList.add('active'); panelResets.classList.remove('hidden'); }
       if(tab==='registry'){
         navRegistry.classList.add('active'); panelRegistry.classList.remove('hidden');
         if(!panelRegistry.dataset.mounted){
@@ -717,11 +787,14 @@ try{
     }
     navApprovals.onclick = () => setTab('approvals');
     navAll.onclick = () => setTab('all');
+    navResets.onclick = () => setTab('resets');
     navRegistry.onclick = () => setTab('registry');
     setTab('approvals');
 
+    let latestUsers = [];
     const unsubAll = db.collection('users').orderBy('created_at','desc').onSnapshot((snap) => {
       const users = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      latestUsers = users;
       const pending = users.filter(u => u.status === 'pending');
 
       const badge = $('#pending-badge');
@@ -752,8 +825,59 @@ try{
     });
     adminUsersUnsub = unsubAll;
 
+    const unsubResets = db.collection('password_reset_requests').orderBy('requested_at','desc').onSnapshot((snap) => {
+      const requests = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      const pendingResets = requests.filter(r => r.status === 'pending');
+
+      const resetsBadge = $('#resets-badge');
+      if(pendingResets.length > 0){ resetsBadge.textContent = pendingResets.length; resetsBadge.classList.remove('hidden'); }
+      else{ resetsBadge.classList.add('hidden'); }
+
+      $('#resets-list').innerHTML = requests.length === 0
+        ? `<div class="empty"><p>No password reset requests.</p></div>`
+        : requests.map(r => {
+            const matchedUser = latestUsers.find(u => u.username === r.username);
+            const hasEmail = matchedUser && matchedUser.recovery_email;
+            return `
+          <div class="user-row" data-reset-id="${r.id}">
+            <div>
+              <div class="u-name">${escapeHtml(r.username)}</div>
+              <div class="u-email">${matchedUser ? escapeHtml(matchedUser.name||'') : 'No matching account found'} ${hasEmail ? '&middot; ' + escapeHtml(matchedUser.recovery_email) : ''}</div>
+            </div>
+            <div class="u-actions">
+              ${r.status === 'pending'
+                ? (hasEmail
+                    ? `<button class="pill-btn approve" data-reset-action="send">Send reset email</button>`
+                    : `<span class="status-tag rejected">No recovery email</span>`)
+                : `<span class="status-tag approved">${escapeHtml(r.status)}</span>`}
+            </div>
+          </div>`;
+          }).join('');
+    });
+    adminResetsUnsub = unsubResets;
+
     document.body.addEventListener('click', adminActionHandler);
     async function adminActionHandler(ev){
+      const resetRow = ev.target.closest('.user-row[data-reset-id]');
+      if(resetRow && document.getElementById('view-admin').contains(resetRow) && ev.target.dataset.resetAction === 'send'){
+        const resetId = resetRow.dataset.resetId;
+        const reqDoc = await db.collection('password_reset_requests').doc(resetId).get();
+        const req = reqDoc.data();
+        const matchedUser = latestUsers.find(u => u.username === req.username);
+        if(!matchedUser || !matchedUser.recovery_email){
+          showToast('No recovery email on file for this username');
+          return;
+        }
+        try{
+          await auth.sendPasswordResetEmail(matchedUser.recovery_email);
+          await db.collection('password_reset_requests').doc(resetId).update({ status:'sent' });
+          showToast('Reset email sent to ' + matchedUser.recovery_email);
+        }catch(err){
+          showToast('Could not send reset email: ' + err.message);
+        }
+        return;
+      }
+
       const row = ev.target.closest('.user-row');
       if(!row || !document.getElementById('view-admin').contains(row)) return;
       const id = row.dataset.id;
@@ -894,12 +1018,29 @@ try{
       if(heroRecentEl && form) form.after(heroRecentEl);
     }
 
+    const listSectionA = container.querySelector('.list-section-a');
+    const listSectionB = container.querySelector('.list-section-b');
+    const formBackBtn = container.querySelector('.form-back-btn');
+
+    function showFormView(){
+      if(listSectionA) listSectionA.classList.add('hidden');
+      if(listSectionB) listSectionB.classList.add('hidden');
+      form.classList.remove('hidden');
+      form.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    function showListView(){
+      form.classList.add('hidden');
+      if(listSectionA) listSectionA.classList.remove('hidden');
+      if(listSectionB) listSectionB.classList.remove('hidden');
+    }
+    if(formBackBtn) formBackBtn.addEventListener('click', () => { resetForm(); showListView(); });
+
     const fab = document.createElement('button');
     fab.className = 'fab-new-entry';
     fab.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>New entry';
     fab.addEventListener('click', () => {
       resetForm();
-      form.scrollIntoView({behavior:'smooth', block:'start'});
+      showFormView();
       setTimeout(() => fExpatName.focus(), 350);
     });
     container.appendChild(fab);
@@ -923,7 +1064,7 @@ try{
         p.input.value = '';
       });
     }
-    cancelBtn.addEventListener('click', resetForm);
+    cancelBtn.addEventListener('click', () => { resetForm(); showListView(); });
 
     function daysUntil(dateStr){
       if(!dateStr) return null;
@@ -1163,6 +1304,7 @@ try{
           showToast('Entry added');
         }
         resetForm();
+        showListView();
         loadEntries();
       }catch(e){
         saveStatus.textContent = 'Could not save: ' + (e.message || 'unknown error');
@@ -1204,7 +1346,8 @@ try{
       cancelBtn.classList.remove('hidden');
       editingBadge.classList.remove('hidden');
       saveStatus.textContent = '';
-      fExpatName.scrollIntoView({behavior:'smooth', block:'center'}); fExpatName.focus();
+      showFormView();
+      fExpatName.focus();
     }
 
     // ---------- VIEW DETAILS MODAL ----------
