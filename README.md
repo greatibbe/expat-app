@@ -59,12 +59,16 @@ Skipping this causes a "domain not authorized" login error.
 
 ## Step 8: Make yourself the first admin
 
-1. Open your live link, **Request access**, sign up with your own details.
+1. Open your live link, **Request access**, enter your name, a service number (e.g. `4655`), and an email address (used only for password recovery, never for login). The app shows your login username as you type — built from your initials + service number (e.g. "Mohamed Ali" + `4655` → `ma_4655`). Set a password and submit.
 2. **Firestore Database → Data → users** collection → open your account's document.
 3. Change `status` to `approved` and `role` to `admin`. Save.
-4. Reload the app — you'll see the **Administrator** view (Approvals / All users / Registry tabs).
+4. Reload the app — you'll see the **Administrator** view (Approvals / All users / Resets / Registry tabs).
 
 From then on, approve everyone else from inside the app — no more Firebase Console needed for day-to-day use.
+
+**Note on login:** people sign in with a **username** (like `ma_4655`) built from their own initials — not an email address. Behind the scenes, Firebase still requires an email format internally, so the app auto-generates a hidden one from the username; nobody ever sees or needs to know it. Since the username is generated the same way every time from name + service number, Firebase itself blocks anyone from accidentally registering a duplicate.
+
+**Password resets:** since login has no real email attached, self-service "forgot password" isn't possible on its own. Instead: a person taps **Forgot password?** on the login screen and enters their username → this creates a request → you approve it from the **Resets** tab → the app sends a real password-reset email to the address they signed up with. Nothing is reset until you approve it.
 
 ## Step 9: Install on your phone
 
@@ -75,7 +79,9 @@ From then on, approve everyone else from inside the app — no more Firebase Con
 
 ## Using the app
 
-**Everyone:** sign in, or request access and wait for approval (auto-updates, no refresh needed).
+**Everyone:** sign in with your username, or request access and wait for approval (auto-updates, no refresh needed). Forgot your password? Tap **Forgot password?** on the login screen.
+
+By default you'll see your stats, expiry alerts, recent entries, and (if you're an admin) the search bar and full ledger — the two-section entry form stays out of the way until you tap **+ New entry** or open an existing entry to edit it. A **Back to registry** link at the top of the form returns you to that view without saving.
 
 **Approved users:**
 - **Expatriate's Information**: Full name, Country, Passport number + expiry, Work permit number + expiry, Current address, Phone number (with Call and WhatsApp buttons), Passport photo, Recent photo, Work permit photo.
@@ -83,11 +89,13 @@ From then on, approve everyone else from inside the app — no more Firebase Con
 - **Scan passport** — reads the machine-readable strip, fills Name, Country, Passport number, and passport expiry date.
 - **Scan work permit / other document** — best-effort OCR for non-standardized documents; looks for a permit code and an expiry date near relevant keywords. Less reliable than the passport scanner — always double-check.
 - **Duplicate check** — warns you if a passport number you're entering already exists in the registry.
+- **Tap any entry** to open a read-only details popup (all fields + photos), with an **Edit this entry** button inside it if you need to change something.
 - **Search** — matches across every field: names, numbers, dates, addresses, phone numbers.
 - **Expiry alerts** — dashboard shows a live count of documents expiring within 30 days or already expired, with a full tappable list.
 
 **Admin only:**
 - **Approvals** / **All users** tabs — approve, reject, revoke.
+- **Resets** tab — approve pending password-reset requests; approving sends a real reset email to the address that person signed up with.
 - **Registry** tab — same tools as everyone, plus **Bulk import**, **Delete all**, and a **Show expiring/expired only** filter on the ledger.
 
 ## Cost
